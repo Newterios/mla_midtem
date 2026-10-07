@@ -1,0 +1,6 @@
+.venv/
+.DS_Store
+# local build helpers, not part of the submission
+build_notebook.py
+build_data_card.py
+slides_build/

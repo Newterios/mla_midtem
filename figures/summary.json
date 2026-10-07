@@ -1,0 +1,55 @@
+{
+  "raw_rows": 4822,
+  "clean_rows": 4819,
+  "n_detail": 2409,
+  "n_card": 2410,
+  "astana": 2507,
+  "almaty": 2312,
+  "cleaning": [
+    {
+      "step": "1 numeric fixed price",
+      "rows_before": 4822,
+      "rows_after": 4822,
+      "removed": 0
+    },
+    {
+      "step": "2 unique listing id",
+      "rows_before": 4822,
+      "rows_after": 4822,
+      "removed": 0
+    },
+    {
+      "step": "3 remove near-duplicate reposts",
+      "rows_before": 4822,
+      "rows_after": 4821,
+      "removed": 1
+    },
+    {
+      "step": "4 plausible ranges",
+      "rows_before": 4821,
+      "rows_after": 4819,
+      "removed": 2
+    },
+    {
+      "step": "5 kitchen/ceiling set to NaN (2/283 values)",
+      "rows_before": 4819,
+      "rows_after": 4819,
+      "removed": 0
+    }
+  ],
+  "best_params": {
+    "Ridge (alpha)": 3.0,
+    "Lasso (alpha)": 0.0003,
+    "KNN (k)": 7.0,
+    "Tree (max_depth)": 7.0
+  },
+  "best_model": "Linear Regression",
+  "best_mae": 8.907,
+  "best_mdape": 12.215,
+  "best_r2": 0.81,
+  "base_mae": 10.344,
+  "base_mdape": 14.815,
+  "dummy_mae": 21.046,
+  "within10": 0.42946058091286304,
+  "within20": 0.7022821576763485
+}
