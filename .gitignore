@@ -4,3 +4,5 @@
 build_notebook.py
 build_data_card.py
 slides_build/
+slides/talk_script.md
+slides/talk_script.pdf

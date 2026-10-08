@@ -45,6 +45,11 @@ def get(url, tries=4):
             r = session.get(url, timeout=40)
             if r.status_code == 200:
                 return r.text
+            if r.status_code == 468:          # bot challenge: retrying makes it worse, let the caller back off
+                return "CAPTCHA"
+            if r.status_code == 404:          # the ad was removed after the search pages were collected
+                log(f"HTTP 404 (removed) for {url}")
+                return None
             log(f"HTTP {r.status_code} for {url} (try {t+1})")
         except requests.RequestException as e:
             log(f"error {e} for {url} (try {t+1})")
@@ -184,9 +189,11 @@ def stage_details(limit, shard="0/1"):
             if html is None or "offer__info-item" not in html:
                 n_fail += 1
                 rec = {"id": ad_id, "fetch_error": True}
-                if html is not None and "safeline" in html.lower():
-                    log("captcha challenge met, sleeping 60 s")
-                    time.sleep(60)
+                if html == "CAPTCHA" or (html is not None and "safeline" in html.lower()):
+                    wait = 90 + random.random() * 30
+                    log(f"captcha challenge met ({n_fail} so far), new session, sleeping {wait:.0f} s")
+                    session.cookies.clear()
+                    time.sleep(wait)
             else:
                 rec = parse_detail(html, ad_id)
                 if k <= 10:

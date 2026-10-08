@@ -44,5 +44,41 @@
       "shard": "1/2"
     },
     "source": "https://krisha.kz/prodazha/kvartiry/ (astana, almaty)"
+  },
+  {
+    "stage": "details",
+    "started_utc": "2026-10-08T12:45:26+00:00",
+    "args": {
+      "stage": "details",
+      "pages": 140,
+      "target": 2600,
+      "limit": 1000000000,
+      "shard": "1/2"
+    },
+    "source": "https://krisha.kz/prodazha/kvartiry/ (astana, almaty)"
+  },
+  {
+    "stage": "details",
+    "started_utc": "2026-10-08T12:46:38+00:00",
+    "args": {
+      "stage": "details",
+      "pages": 140,
+      "target": 2600,
+      "limit": 1000000000,
+      "shard": "1/2"
+    },
+    "source": "https://krisha.kz/prodazha/kvartiry/ (astana, almaty)"
+  },
+  {
+    "stage": "details",
+    "started_utc": "2026-10-08T13:00:06+00:00",
+    "args": {
+      "stage": "details",
+      "pages": 140,
+      "target": 2600,
+      "limit": 1000000000,
+      "shard": "1/2"
+    },
+    "source": "https://krisha.kz/prodazha/kvartiry/ (astana, almaty)"
   }
 ]

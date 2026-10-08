@@ -1,9 +1,9 @@
 {
   "raw_rows": 4822,
-  "clean_rows": 4819,
-  "n_detail": 2409,
-  "n_card": 2410,
-  "astana": 2507,
+  "clean_rows": 4815,
+  "n_detail": 4802,
+  "n_card": 13,
+  "astana": 2503,
   "almaty": 2312,
   "cleaning": [
     {
@@ -21,35 +21,35 @@
     {
       "step": "3 remove near-duplicate reposts",
       "rows_before": 4822,
-      "rows_after": 4821,
-      "removed": 1
+      "rows_after": 4817,
+      "removed": 5
     },
     {
       "step": "4 plausible ranges",
-      "rows_before": 4821,
-      "rows_after": 4819,
+      "rows_before": 4817,
+      "rows_after": 4815,
       "removed": 2
     },
     {
-      "step": "5 kitchen/ceiling set to NaN (2/283 values)",
-      "rows_before": 4819,
-      "rows_after": 4819,
+      "step": "5 kitchen/ceiling set to NaN (7/282 values)",
+      "rows_before": 4815,
+      "rows_after": 4815,
       "removed": 0
     }
   ],
   "best_params": {
-    "Ridge (alpha)": 3.0,
-    "Lasso (alpha)": 0.0003,
-    "KNN (k)": 7.0,
-    "Tree (max_depth)": 7.0
+    "Ridge (alpha)": 10.0,
+    "Lasso (alpha)": 0.0001,
+    "KNN (k)": 10.0,
+    "Tree (max_depth)": 9.0
   },
-  "best_model": "Linear Regression",
-  "best_mae": 8.907,
-  "best_mdape": 12.215,
-  "best_r2": 0.81,
-  "base_mae": 10.344,
-  "base_mdape": 14.815,
-  "dummy_mae": 21.046,
-  "within10": 0.42946058091286304,
-  "within20": 0.7022821576763485
+  "best_model": "Lasso (alpha=0.0001)",
+  "best_mae": 8.629,
+  "best_mdape": 11.321,
+  "best_r2": 0.719,
+  "base_mae": 9.945,
+  "base_mdape": 14.346,
+  "dummy_mae": 20.402,
+  "within10": 0.446521287642783,
+  "within20": 0.7258566978193146
 }
