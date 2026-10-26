@@ -1,7 +1,9 @@
 .venv/
 .DS_Store
+__pycache__/
+.ipynb_checkpoints/
+data/clean/clean_backup.csv
 # local build helpers, not part of the submission
-build_notebook.py
 build_data_card.py
 slides_build/
 slides/talk_script.md
