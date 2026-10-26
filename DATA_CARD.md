@@ -1,5 +1,7 @@
 # Data card — krisha.kz apartment sale listings, Astana and Almaty
 
+*Endterm update (31 Oct 2026):* the free-text `description` was checked for contact data with `data_collection/scrub_personal_data.py`: no phone numbers or e-mails were found (krisha.kz strips them), 7 realtor social-media handles were masked with `[contact removed]`. `has_detail` is no longer used as a model feature (it describes our scraper, not the apartment). Ads whose map coordinates lie outside their own city get `lat`/`lon` set to missing inside the Endterm notebook (Section 2.2); the file itself is unchanged.
+
 **Team:** Rakhat Balgabekov, Aitbek Kaiyrbekuly (SE-2424) · **Collected:** search pages and the first half of the ad pages on 4 October 2026, the second half of the ad pages on 8 October 2026 (first request 2026-10-04T17:02:20+00:00 UTC; every raw row carries its own `scraped_at`)
 
 | Item | Value |
