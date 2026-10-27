@@ -288,3 +288,53 @@ print("five best boosting settings:"); display(hgb_res.head(5).drop(columns=["mo
 # %% [markdown]
 # # **Three implementations, one answer.** XGBoost's best setting (depth 4, 600 trees, learning rate 0.12, 5 rows per leaf, 70 % of the rows and 60 % of the columns per tree, L2 penalty 5) scores **6.64 ± 0.32 M**, LightGBM's best (31 leaves, 900 trees, learning rate 0.08, 20 rows per leaf, 70 % rows and 80 % columns, L2 penalty 5) **6.75 ± 0.28 M**, and scikit-learn's histogram boosting stays first at **6.62 ± 0.35 M**. The three differ by 0.13 M, a third of one fold SD, so the choice of library is not where the error comes from: all three fit the same additive model of shallow trees on the same histogram bins, and the subsampling and the L2 penalty that XGBoost and LightGBM add bring no measurable gain on 3,852 rows (the best XGBoost settings have the penalty, the best scikit-learn settings have none, and both land at the same place). The agreement is useful as a check: the 6.6 M floor of Section 3 is a property of the data and the fields, not of one implementation, which is why Section 3.4 asks what the fields do not contain. The training MAEs of the top settings (0.1–4.3 M against 6.6–6.8 M on validation) show the same memorising as before; LightGBM's best setting with 31 leaves and 900 trees fits its training ads to 1.0 M and generalises no worse than the slower ones, which is the "many small steps" result again. The tuned scikit-learn boosting remains the candidate for Section 6, with XGBoost and LightGBM in the final table as the two independent confirmations of its score.
 
+# %% [markdown]
+# ### 3.4 What do the ensembles rely on?
+# Two views. The forest is refitted on all training rows with `oob_score=True`: every tree leaves out about a third of the rows, so each row can be predicted by the trees that never saw it, which gives a validation estimate without a split. Then impurity importance of that forest (summed over the one-hot columns of each original field) is shown next to **permutation importance** of the tuned boosting pipeline on the training rows (`n_repeats=10`): how much the MAE in KZT grows when one column is shuffled.
+
+# %%
+from sklearn.inspection import permutation_importance
+rf_params = {k.replace("regressor__model__", ""): v for k, v in rf_search.best_params_.items()}
+pre_tree = make_pre(False).fit(X_train)
+rf_oob = RandomForestRegressor(**rf_params, oob_score=True, random_state=SEED, n_jobs=-1).fit(pre_tree.transform(X_train), np.log(y_train))
+oob_pred = np.exp(rf_oob.oob_prediction_)
+print(f"forest OOB MAE {mean_absolute_error(y_train, oob_pred)/1e6:.2f} M KZT, OOB MdAPE {mdape(y_train, oob_pred):.1f} %, OOB R² {r2_score(y_train, oob_pred):.3f}"
+      f"   (5-fold CV of the same setting: MAE {registry['Random forest (tuned)'][1]['CV MAE (M KZT)']:.2f} M)")
+names = pre_tree.get_feature_names_out()
+def origin(n):
+    n = n.split("__", 1)[1]
+    if n.startswith("missingindicator_"): return n.replace("missingindicator_", "") + " (missing?)"
+    for c in CAT:
+        if n.startswith(c + "_"): return c
+    return n
+imp = pd.Series(rf_oob.feature_importances_, index=[origin(n) for n in names]).groupby(level=0).sum().sort_values(ascending=False)
+t0 = time.time()
+perm = permutation_importance(registry["Gradient boosting (tuned)"][0], X_train, y_train, scoring="neg_mean_absolute_error", n_repeats=10, random_state=SEED, n_jobs=-1)
+perm_s = pd.Series(perm.importances_mean / 1e6, index=FEATURES).sort_values(ascending=False)
+fig, ax = plt.subplots(1, 2, figsize=(13, 4.2))
+imp.head(12).iloc[::-1].plot.barh(ax=ax[0], color="C0"); ax[0].set_title("Forest: impurity importance (summed per field)"); ax[0].set_xlabel("share of impurity decrease")
+perm_s.head(12).iloc[::-1].plot.barh(ax=ax[1], color="C1"); ax[1].set_title("Boosting: permutation importance on training rows"); ax[1].set_xlabel("increase of MAE when shuffled, M KZT")
+plt.tight_layout(); plt.savefig(FIG / "e03_importance.png", bbox_inches="tight"); plt.show()
+print(f"({time.time()-t0:.0f} s)  permutation importance, top 8 (M KZT):", perm_s.head(8).round(2).to_dict())
+
+# %% [markdown]
+# # **OOB and importance.** The forest's OOB MAE is **7.66 M** against 7.99 M for the 5-fold estimate of the same setting, OOB R² 0.80: the two estimates agree within one SD, and OOB is the cheaper one because it needs no refits (each tree already leaves out about a third of the rows). Both importance views put **size first and location second**: the forest's impurity importance gives 0.35 each to `area` and `log_area` (the same information in two columns, which the forest splits between them; together 0.70), then `lat` and `lon` (0.08 and 0.07), ceiling height (0.04, a proxy for building class) and the year (0.02). Permutation importance on the tuned boosting model says the same with a scale that means something: shuffling `area` raises the MAE by **17.5 M KZT**, shuffling `lon` or `lat` by 7.2 and 6.4 M, the year by 2.8 M, ceiling height by 2.1 M, and `district` only by 1.3 M. The coordinates beat the district labels by a factor of five: 13 district names are a coarse map, and the ensembles use the fine one, which is the structure the Midterm's KNN was trying to use and could not. The ranking agrees between the two methods and with the Midterm's linear coefficients (log area and the Almaty centre districts were the largest), and it tells us where the remaining error cannot come from: not from a missing size or location signal, but from what the fields do not contain.
+
+# %% [markdown]
+# ### 3.5 Extra trees and a blend of the two tuned ensembles
+# Two cheap additions that the lecture mentions: **extremely randomised trees** (random split thresholds, which reduces variance further at the price of some bias) and a **blend** that averages the log-price predictions of the tuned forest and the tuned boosting model. A blend helps when the two models make *different* mistakes.
+
+# %%
+class GeoMeanBlend(BaseEstimator, RegressorMixin):
+    """fits each estimator and returns the geometric mean of their KZT predictions (= mean on the log scale)"""
+    def __init__(self, estimators): self.estimators = estimators
+    def fit(self, X, y): self.fitted_ = [clone(e).fit(X, y) for e in self.estimators]; return self
+    def predict(self, X): return np.exp(np.mean([np.log(e.predict(X)) for e in self.fitted_], axis=0))
+cv_eval("Extra trees (500, leaf 2)", logged(ExtraTreesRegressor(n_estimators=500, min_samples_leaf=2, max_features=0.75, random_state=SEED, n_jobs=1), scaled=False))
+cv_eval("Blend: tuned forest + tuned boosting", GeoMeanBlend([registry["Random forest (tuned)"][0], registry["Gradient boosting (tuned)"][0]]))
+display(table(["Midterm linear (log price)", "Midterm decision tree (depth 9)", "Random forest, 300 trees (default)", "Random forest (tuned)",
+               "Hist. gradient boosting (default)", "Gradient boosting (tuned)", "XGBoost (tuned)", "LightGBM (tuned)", "Extra trees (500, leaf 2)", "Blend: tuned forest + tuned boosting"]))
+
+# %% [markdown]
+# # **Extra trees and the blend.** Extra trees score **8.69 ± 0.43 M**, worse than the forest (8.00): random split thresholds add bias, and this market has sharp thresholds (a building from 2018 onwards, the top floor, a district border) that a random cut misses. The blend of the tuned forest and the tuned boosting scores **6.95 ± 0.33 M**, between its two parents (6.62 and 7.99) and worse than boosting alone: averaging only helps when both models are about equally good and wrong on different ads, and here the forest is 1.4 M weaker and its errors are mostly the same ads (both models fail on the same luxury and text-only cases of Section 7). The tuned boosting therefore stays the single ensemble candidate for Section 6.
+
