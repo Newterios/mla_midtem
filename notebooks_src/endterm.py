@@ -224,3 +224,67 @@ plt.tight_layout(); plt.savefig(FIG / "e01_boosting_lr_trees.png", bbox_inches="
 # %% [markdown]
 # # **Learning rate × trees.** The smaller the learning rate, the more trees are needed: with 0.3 the curve flattens at **6.99 M after 450 trees** and creeps back up to 7.00 at 600, with 0.1 it is still improving at 600 trees (**6.74 M**), and with 0.03 the model is plainly underfitting even at 600 trees (7.44 M, and 11.76 M after 50). Each tree moves the prediction by learning rate × its own fit, so a rate of 0.03 needs roughly ten times the trees of 0.3 to travel the same distance. Too many trees hurt only at the largest rate, and only a little, because with 3,852 rows and trees of depth 3 there is still signal left in the residuals after 600 steps; the lecture's warning about fitting noise in the residuals would show up later on this curve. The whole table from 300 trees on lies between 6.74 and 7.44 M, and the fold SD is about 0.35, so 0.1 × 600 and 0.3 × 450 are not distinguishable; we would pick 0.1 with at least 600 trees, which is exactly what the randomised search below settles on.
 
+# %% [markdown]
+# ### 3.3 Randomised search for the forest and for histogram boosting
+# Both ensembles are tuned with `RandomizedSearchCV` on the **same five folds**, scored by MAE in KZT (MdAPE and R² are recorded as well). Every candidate is a full pipeline, so imputation and encoding are refitted inside each fold. The forest search draws 25 settings, the boosting search 40; each search also records the training-fold score so that we can see whether a setting memorises.
+
+# %%
+from sklearn.model_selection import RandomizedSearchCV
+def search(name, est, space, n_iter):
+    t0 = time.time()
+    s = RandomizedSearchCV(est, space, n_iter=n_iter, cv=cv, scoring=SCORING, refit="MAE", random_state=SEED, n_jobs=-1, return_train_score=True)
+    s.fit(X_train, y_train)
+    res = pd.DataFrame(s.cv_results_)
+    res = res[[c for c in res.columns if c.startswith("param_")] + ["mean_train_MAE", "mean_test_MAE", "std_test_MAE", "mean_test_MdAPE", "mean_test_R2", "rank_test_MAE"]].copy()
+    res.columns = [c.replace("param_regressor__model__", "") for c in res.columns]
+    res["mean_train_MAE"] = -res["mean_train_MAE"] / 1e6; res["mean_test_MAE"] = -res["mean_test_MAE"] / 1e6
+    res["std_test_MAE"] = res["std_test_MAE"] / 1e6; res["mean_test_MdAPE"] = -res["mean_test_MdAPE"]
+    res = res.sort_values("rank_test_MAE"); res.insert(0, "model", name); res.to_csv(OUT / f"search_{name.split()[0].lower()}.csv", index=False)
+    b = s.best_index_
+    row = {"CV MAE (M KZT)": -s.cv_results_["mean_test_MAE"][b] / 1e6, "CV MAE SD": s.cv_results_["std_test_MAE"][b] / 1e6,
+           "CV MdAPE %": -s.cv_results_["mean_test_MdAPE"][b], "CV R²": s.cv_results_["mean_test_R2"][b], "fit time s": s.cv_results_["mean_fit_time"][b],
+           "folds MAE": np.round(-np.array([s.cv_results_[f"split{i}_test_MAE"][b] for i in range(5)]) / 1e6, 2)}
+    registry[name] = (s.best_estimator_, row)
+    print(f"{name}: {n_iter} candidates × 5 folds in {time.time()-t0:.0f} s -> best CV MAE {row['CV MAE (M KZT)']:.2f} ± {row['CV MAE SD']:.2f} M, MdAPE {row['CV MdAPE %']:.1f} %")
+    print("   best settings:", {k.replace("regressor__model__", ""): v for k, v in s.best_params_.items()})
+    return s, res
+
+rf_space = {"regressor__model__n_estimators": [200, 400], "regressor__model__max_depth": [None, 8, 12, 16, 24],
+            "regressor__model__min_samples_leaf": [1, 2, 4, 8], "regressor__model__max_features": ["sqrt", 0.3, 0.5, 0.75, 1.0]}
+hgb_space = {"regressor__model__learning_rate": [0.02, 0.03, 0.05, 0.08, 0.12, 0.2], "regressor__model__max_iter": [150, 250, 400, 600, 800],
+             "regressor__model__max_leaf_nodes": [7, 15, 31, 63], "regressor__model__min_samples_leaf": [5, 10, 20, 35, 50],
+             "regressor__model__l2_regularization": [0.0, 0.1, 1.0, 5.0], "regressor__model__max_depth": [None, 6]}
+rf_search, rf_res = search("Random forest (tuned)", logged(RandomForestRegressor(random_state=SEED, n_jobs=1), scaled=False), rf_space, 25)
+hgb_search, hgb_res = search("Gradient boosting (tuned)", logged(HistGradientBoostingRegressor(random_state=SEED, early_stopping=False), scaled=False), hgb_space, 40)
+
+# %% [markdown]
+# **XGBoost and LightGBM.** The lecture's third ensemble is XGBoost, and the syllabus names XGBoost and LightGBM as the course's tools, so both are tuned the same way (20 random settings each, same folds, same metric). They implement the same idea as scikit-learn's histogram boosting with three additions: an L2 penalty on the leaf values inside the objective, second-order gradients, and row/column subsampling of the kind the forest uses.
+
+# %%
+from xgboost import XGBRegressor
+from lightgbm import LGBMRegressor
+xgb_space = {"regressor__model__n_estimators": [300, 600, 900], "regressor__model__learning_rate": [0.03, 0.05, 0.08, 0.12], "regressor__model__max_depth": [3, 4, 6, 8],
+             "regressor__model__min_child_weight": [1, 5, 10], "regressor__model__subsample": [0.7, 0.85, 1.0], "regressor__model__colsample_bytree": [0.6, 0.8, 1.0], "regressor__model__reg_lambda": [0.0, 1.0, 5.0]}
+lgb_space = {"regressor__model__n_estimators": [300, 600, 900], "regressor__model__learning_rate": [0.03, 0.05, 0.08, 0.12], "regressor__model__num_leaves": [7, 15, 31, 63],
+             "regressor__model__min_child_samples": [5, 10, 20, 35], "regressor__model__subsample": [0.7, 0.85, 1.0], "regressor__model__subsample_freq": [1], "regressor__model__colsample_bytree": [0.6, 0.8, 1.0], "regressor__model__reg_lambda": [0.0, 1.0, 5.0]}
+xgb_search, xgb_res = search("XGBoost (tuned)", logged(XGBRegressor(random_state=SEED, n_jobs=1, tree_method="hist"), scaled=False), xgb_space, 20)
+lgb_search, lgb_res = search("LightGBM (tuned)", logged(LGBMRegressor(random_state=SEED, n_jobs=1, verbose=-1), scaled=False), lgb_space, 20)
+
+# %%
+fig, ax = plt.subplots(1, 2, figsize=(13, 3.8))
+for a, (res, title) in zip(ax, [(rf_res, "Random forest: 25 settings"), (hgb_res, "Hist. gradient boosting: 40 settings")]):
+    r = res.sort_values("mean_test_MAE").reset_index(drop=True)
+    a.errorbar(range(len(r)), r["mean_test_MAE"], yerr=r["std_test_MAE"], fmt="o", ms=3, capsize=2, label="validation MAE ± fold SD")
+    a.plot(range(len(r)), r["mean_train_MAE"], "s", ms=3, color="C3", alpha=.6, label="training MAE")
+    a.axhline(bv.loc["Random forest, 300 trees (default)" if "forest" in title else "Hist. gradient boosting (default)", "CV MAE (M KZT)"], color="grey", ls="--", lw=1, label="default setting")
+    a.set_xlabel("candidate, sorted by validation MAE"); a.set_ylabel("MAE, M KZT"); a.set_title(title); a.legend(fontsize=8)
+plt.tight_layout(); plt.savefig(FIG / "e02_random_search.png", bbox_inches="tight"); plt.show()
+print("five best forest settings:"); display(rf_res.head(5).drop(columns=["model", "rank_test_MAE"]).round(3))
+print("five best boosting settings:"); display(hgb_res.head(5).drop(columns=["model", "rank_test_MAE"]).round(3))
+
+# %% [markdown]
+# # **What the searches found.** *Forest:* the 25 settings run from 7.99 to 9.9 M, and the best (200 trees, depth 16, one row per leaf, all features at each split) scores **7.99 ± 0.38 M**, against **8.00 M** for the default 300 trees. Tuning bought 0.01 M, a fortieth of the fold SD: the forest is insensitive to its settings on these data, and the only thing that hurts it is starving the splits (`max_features="sqrt"` with 8 rows per leaf gives the worst candidates). The training MAE of 3 M next to a validation MAE of 8 M shows that each forest memorises, and that it does not matter, which is bagging again. *Boosting:* the 40 settings run from 6.62 to 8.1 M. The best (learning rate 0.12, 7 leaves, 600 iterations, 5 rows per leaf, no L2 penalty) scores **6.62 ± 0.35 M**, against 7.01 M for the default, a gain of 0.39 M, about one fold SD, and the five best settings lie within 0.11 M of each other with quite different shapes (7 to 31 leaves, learning rates from 0.03 to 0.12, 600 to 800 iterations). What they share is **many iterations and small leaves**: the opposite of the bank data in Practice 7B, where the best boosting was slow and heavily regularised, because here the signal is strong (R² ≈ 0.85) and lives in continuous inputs, so the model can afford to fit fine structure. The training MAE of the best boosting setting is 3.4 M, half its validation MAE, which means that even the chosen model memorises part of the training ads; the L2 penalty did nothing to stop that (the best setting has none), and the validation score did not punish it. We keep the tuned boosting as the leading candidate and note that its advantage over the default is one SD, not ten.
+
+# %% [markdown]
+# # **Three implementations, one answer.** XGBoost's best setting (depth 4, 600 trees, learning rate 0.12, 5 rows per leaf, 70 % of the rows and 60 % of the columns per tree, L2 penalty 5) scores **6.64 ± 0.32 M**, LightGBM's best (31 leaves, 900 trees, learning rate 0.08, 20 rows per leaf, 70 % rows and 80 % columns, L2 penalty 5) **6.75 ± 0.28 M**, and scikit-learn's histogram boosting stays first at **6.62 ± 0.35 M**. The three differ by 0.13 M, a third of one fold SD, so the choice of library is not where the error comes from: all three fit the same additive model of shallow trees on the same histogram bins, and the subsampling and the L2 penalty that XGBoost and LightGBM add bring no measurable gain on 3,852 rows (the best XGBoost settings have the penalty, the best scikit-learn settings have none, and both land at the same place). The agreement is useful as a check: the 6.6 M floor of Section 3 is a property of the data and the fields, not of one implementation, which is why Section 3.4 asks what the fields do not contain. The training MAEs of the top settings (0.1–4.3 M against 6.6–6.8 M on validation) show the same memorising as before; LightGBM's best setting with 31 leaves and 900 trees fits its training ads to 1.0 M and generalises no worse than the slower ones, which is the "many small steps" result again. The tuned scikit-learn boosting remains the candidate for Section 6, with XGBoost and LightGBM in the final table as the two independent confirmations of its score.
+
