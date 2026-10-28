@@ -449,3 +449,42 @@ display(unusual[["city", "district", "rooms", "area", "floor", "total_floors", "
 #
 # What DBSCAN is good for here is the **noise**: the 29 ads that have fewer than 14 similar apartments within eps. The six most isolated ones are not typos but unusual objects: a 140 m² flat on the 42nd floor of a 43-storey tower, a 148 m² penthouse on floor 32 of 33, a 6-room 187 m² penthouse on floors 19–20 of a 2025 building (listed twice, ads 222 and 2738, a repost that the Midterm's near-duplicate rule missed because the street field differs), a 1-room flat on the 11th floor of a 34-storey building. We keep them in the training data, since they are real, but Section 7.4 uses "no dense group of similar ads" as a warning that the model's estimate for such an ad rests on few comparables.
 
+# %% [markdown]
+# ### 4.3 PCA: how many dimensions do the structured fields carry?
+# PCA on the standardised numeric fields of the training rows (`area`, `rooms`, `kitchen_area`, `floor`, `total_floors`, `year_built`, `ceiling_height`, `n_photos`, `lat`, `lon`; `log_area` is left out because it is a function of `area`). Then two questions: what the first components mean (loadings), and whether feeding components instead of raw columns helps a model (KNN and Ridge on the full encoded matrix, with PCA refitted inside every fold).
+
+# %%
+from sklearn.decomposition import PCA
+PCA_COLS = ["area", "rooms", "kitchen_area", "floor", "total_floors", "year_built", "ceiling_height", "n_photos", "lat", "lon"]
+pca_prep = Pipeline([("imp", SimpleImputer(strategy="median")), ("sc", StandardScaler())]).fit(train_df[PCA_COLS])
+Z = pca_prep.transform(train_df[PCA_COLS]); pca = PCA(random_state=SEED).fit(Z); S = pca.transform(Z)
+cum = np.cumsum(pca.explained_variance_ratio_)
+print("explained variance ratio:", np.round(pca.explained_variance_ratio_, 3))
+print("components for 80 / 90 / 95 %:", [int(np.searchsorted(cum, q) + 1) for q in (0.8, 0.9, 0.95)], "of", len(PCA_COLS))
+load = pd.DataFrame(pca.components_[:3].T, index=PCA_COLS, columns=["PC1", "PC2", "PC3"]).round(3)
+display(load)
+fig, ax = plt.subplots(1, 3, figsize=(15, 4))
+ax[0].plot(range(1, len(cum) + 1), cum * 100, marker="o"); ax[0].axhline(90, color="grey", ls="--", lw=1); ax[0].set_xlabel("components"); ax[0].set_ylabel("cumulative explained variance, %"); ax[0].set_title("Numeric fields: cumulative variance")
+for a, (col, title, kw) in zip(ax[1:], [(train_df["city"].map({"Astana": 0, "Almaty": 1}), "PC1 × PC2 coloured by city", dict(cmap="coolwarm")),
+                                          (np.log10(train_df["price_m2"]), "PC1 × PC2 coloured by log10(price per m²)", dict(cmap="viridis"))]):
+    s = a.scatter(S[:, 0], S[:, 1], c=col, s=4, alpha=.5, **kw); a.set_xlabel("PC1"); a.set_ylabel("PC2"); a.set_title(title)
+plt.colorbar(s, ax=ax[2], fraction=.04)
+plt.tight_layout(); plt.savefig(FIG / "e07_pca.png", bbox_inches="tight"); plt.show()
+
+# %%
+pca_rows = []
+for model_name, model in [("KNN (k=10, distance)", KNeighborsRegressor(10, weights="distance")), ("Ridge (alpha=10)", Ridge(alpha=10))]:
+    for k in [None, 0.9, 20, 10, 5, 2]:
+        steps = [("pre", make_pre(True))] + ([("pca", PCA(n_components=k, random_state=SEED))] if k is not None else []) + [("model", model)]
+        est = TransformedTargetRegressor(regressor=Pipeline(steps), func=np.log, inverse_func=np.exp, check_inverse=False)
+        r = cv_eval(f"{model_name} + PCA({k})" if k is not None else f"{model_name}, no PCA", est, register=(k in (None, 0.9) and "KNN" in model_name), verbose=False)
+        pca_rows.append({"model": model_name, "PCA components": "none" if k is None else k, "CV MAE (M KZT)": r["CV MAE (M KZT)"], "SD": r["CV MAE SD"], "CV MdAPE %": r["CV MdAPE %"]})
+n_enc = make_pre(True).fit(X_train).transform(X_train.head()).shape[1]
+print(f"encoded matrix has {n_enc} columns")
+display(pd.DataFrame(pca_rows).pivot(index="PCA components", columns="model", values="CV MAE (M KZT)").round(2).reindex(["none", 0.9, 20, 10, 5, 2]))
+
+# %% [markdown]
+# # **How many dimensions, and what they are.** Ten numeric fields compress to **5 components for 80 % and 7 for 90 %** of the variance, so there is some redundancy but not much: PC1 carries 27.8 %, PC2 21.8 %, and the last component carries 0.0 %, because across two cities latitude and longitude are perfectly anti-correlated (loadings +0.40 and −0.40 on every component: all of Astana is north-west of all of Almaty), so one coordinate is redundant. The loadings read naturally. **PC1** has positive weights on total floors (0.41), latitude (0.40), year built (0.34) and floor (0.34) and a negative one on longitude (−0.40): it is "new high-rise in Astana" against "older low-rise in Almaty", which is why the middle map separates the cities along PC1. **PC2** is size: area (0.50), rooms (0.52), kitchen area (0.23) and the number of photos (0.35; big flats get more photos), opposed to the Astana direction. **PC3** is the floor and the height of the building against area and rooms: a small flat high up versus a large flat in a low building. Price per m² does not follow either axis cleanly in the right-hand map, which already suggests that the directions of largest variance are not the directions of price.
+#
+# **Does PCA help a model?** No, at any number of components. KNN on the raw 71-column matrix scores 11.13 M; on the components that keep 90 % of the variance 11.48 M, on 10 components 11.33, on 2 components 12.44. Ridge loses even more: 9.10 M without PCA, 10.61 M with 90 % of the variance kept, 11.32 M with 10 components. PCA keeps the variance of the inputs, which in this matrix is dominated by the one-hot district and attribute columns, and throws away low-variance directions that carry price; a model wants the second kind. The Midterm's hand-made KNN on size and location only (10.18 M) beats both KNN on everything (11.13) and KNN on principal components (11.48): choosing columns by what they mean beats choosing directions by how much they vary. PCA stays in this notebook as a description of the table, not as a preprocessing step, which is the same conclusion as Practice 6B and Assignment 2.
+
