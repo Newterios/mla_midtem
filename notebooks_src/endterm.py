@@ -411,3 +411,41 @@ plt.tight_layout(); plt.savefig(FIG / "e05_segments_map.png", bbox_inches="tight
 #
 # Price per m², which was never an input, differs by 1.4× between segments in Astana (477 to 667 k) and 1.3× in Almaty (632 to 848 k), so the segments do carry price information, but it is information that the fields already contain (age, height, location), which is what Section 4.4 tests. What the segmentation tells us that a single field does not: the cheap segment of Astana is defined by age *and* place together (old low-rise in the north-east), and in Almaty two segments of the same size and age (Alm-2 and Alm-1) differ by 90 k/m² only through where they are. The maps show the same: Astana's segments overlap everywhere except the old north-east, Almaty's are geographic (west, centre, north-east).
 
+# %% [markdown]
+# ### 4.2 DBSCAN: dense groups and unusual ads
+# DBSCAN on the same seven standardised inputs, all training rows together (the two cities are far apart in `lat`/`lon`, so they can never be joined). `min_samples = 14`, twice the number of inputs; `eps` is read from the knee of the sorted distance to the 14th neighbour (the point farthest from the straight line between the ends of the curve), with two other values as a check. The noise points are the ads that have fewer than 14 similar apartments within `eps`: candidates for data errors or for genuinely unusual objects.
+
+# %%
+all_prep = Pipeline([("imp", SimpleImputer(strategy="median")), ("sc", StandardScaler())]).fit(train_df[SEG])
+M_all = all_prep.transform(train_df[SEG])
+kd = np.sort(NearestNeighbors(n_neighbors=14).fit(M_all).kneighbors(M_all)[0][:, -1])
+p1, p2 = np.array([0, kd[0]]), np.array([len(kd) - 1, kd[-1]]); line = p2 - p1; line /= np.linalg.norm(line)
+pts = np.column_stack([np.arange(len(kd)), kd]) - p1
+dist = np.abs(pts[:, 0] * line[1] - pts[:, 1] * line[0]); knee = int(np.argmax(dist)); eps = float(kd[knee])
+db_rows = []
+for e in [eps * 0.75, eps, eps * 1.25]:
+    lab = DBSCAN(eps=e, min_samples=14).fit_predict(M_all)
+    sizes = np.bincount(lab[lab >= 0]) if (lab >= 0).any() else np.array([])
+    db_rows.append({"eps": round(e, 3), "clusters": int(lab.max() + 1), "noise ads": int((lab == -1).sum()), "noise %": round(100 * (lab == -1).mean(), 1),
+                    "largest cluster": int(sizes.max()) if len(sizes) else 0, "clusters ≥ 100 ads": int((sizes >= 100).sum())})
+display(pd.DataFrame(db_rows).set_index("eps"))
+db_labels = DBSCAN(eps=eps, min_samples=14).fit_predict(M_all); train_df["dbscan"] = db_labels
+fig, ax = plt.subplots(1, 2, figsize=(13, 4))
+ax[0].plot(kd); ax[0].axhline(eps, color="C3", ls="--", lw=1); ax[0].set_title(f"distance to the 14th neighbour, sorted (knee at eps = {eps:.2f})"); ax[0].set_xlabel("training ads, sorted"); ax[0].set_ylabel("distance (standardised units)")
+d = train_df[train_df["city"] == "Almaty"]
+for l, g in d.groupby("dbscan"):
+    ax[1].scatter(g["lon"], g["lat"], s=5, alpha=.5, color="black" if l == -1 else None, label="noise" if l == -1 else f"cluster {l} (n={len(g)})")
+ax[1].set_title("DBSCAN groups, Almaty (black = noise)"); ax[1].legend(fontsize=7, markerscale=3, ncol=2)
+plt.tight_layout(); plt.savefig(FIG / "e06_dbscan.png", bbox_inches="tight"); plt.show()
+print("cluster sizes by city:"); display(pd.crosstab(train_df["dbscan"], train_df["city"]).T)
+kd_all = NearestNeighbors(n_neighbors=14).fit(M_all).kneighbors(M_all)[0][:, -1]
+unusual = train_df.assign(k_distance=kd_all)[train_df["dbscan"] == -1].sort_values("k_distance", ascending=False).head(6)
+pd.set_option("display.max_colwidth", 110)
+display(unusual[["city", "district", "rooms", "area", "floor", "total_floors", "year_built", "price", "segment", "k_distance", "description"]]
+        .assign(price=lambda t: (t["price"] / 1e6).round(1), description=lambda t: t["description"].astype(str).str.replace(r"\s+", " ", regex=True).str.slice(0, 110)).round(2))
+
+# %% [markdown]
+# # **What DBSCAN finds.** At the knee, eps = 1.40, DBSCAN returns exactly **two clusters, which are the two cities** (1,984 Astana ads and 1,834 Almaty ads; 5 Almaty ads without coordinates land in the Astana cluster because the imputed median latitude lies in Astana, a per-city imputation would fix that and is noted for the Final), plus **29 noise ads (0.8 %)**; a smaller eps (1.05) breaks the clouds into 10 groups but declares 131 ads noise, a larger one (1.75) leaves 13 noise ads and still two clusters. In seven standardised dimensions each city's market is **one dense cloud that thins out towards its edge**: the sorted 14th-neighbour distance rises slowly from 0.3 to 1.4 over 3,800 ads and only then shoots up, so there is no empty space between "segments" for a density method to find, exactly as in the wholesale data of Practice 6A. That is also the honest reading of the K-Means segments above: a silhouette of 0.21–0.25 says they are cuts through a continuum, useful as a description, not islands.
+#
+# What DBSCAN is good for here is the **noise**: the 29 ads that have fewer than 14 similar apartments within eps. The six most isolated ones are not typos but unusual objects: a 140 m² flat on the 42nd floor of a 43-storey tower, a 148 m² penthouse on floor 32 of 33, a 6-room 187 m² penthouse on floors 19–20 of a 2025 building (listed twice, ads 222 and 2738, a repost that the Midterm's near-duplicate rule missed because the street field differs), a 1-room flat on the 11th floor of a 34-storey building. We keep them in the training data, since they are real, but Section 7.4 uses "no dense group of similar ads" as a warning that the model's estimate for such an ad rests on few comparables.
+
