@@ -338,3 +338,76 @@ display(table(["Midterm linear (log price)", "Midterm decision tree (depth 9)", 
 # %% [markdown]
 # # **Extra trees and the blend.** Extra trees score **8.69 ± 0.43 M**, worse than the forest (8.00): random split thresholds add bias, and this market has sharp thresholds (a building from 2018 onwards, the top floor, a district border) that a random cut misses. The blend of the tuned forest and the tuned boosting scores **6.95 ± 0.33 M**, between its two parents (6.62 and 7.99) and worse than boosting alone: averaging only helps when both models are about equally good and wrong on different ads, and here the forest is 1.4 M weaker and its errors are mostly the same ads (both models fail on the same luxury and text-only cases of Section 7). The tuned boosting therefore stays the single ensemble candidate for Section 6.
 
+# %% [markdown]
+# ## 4. Unsupervised analysis: market segments, unusual ads and PCA (Week 6)
+#
+# **Why.** The Midterm error grew with price and with size: one global model treated the luxury segment like the mass market, and we never defined what the "segments" of this market are. Clustering answers that without using the price: it groups apartments by what they *are* (size, age, height, location), and only afterwards we look at what they *cost*. DBSCAN finds the ads that sit in no dense group at all. PCA tells how many independent dimensions the structured fields really carry, which is the question behind the Midterm's weak KNN.
+#
+# ### 4.1 K-Means segments within each city
+# **Inputs:** `log_area`, `rooms`, `floor`, `total_floors`, `year_built`, `lat`, `lon` (median-imputed, standardised; the target and `price_m2` are not inputs). Clustering is run **within each city**: with both cities together the first thing any distance sees is the 1,000 km between them, and the two clusters that come out are just "Astana" and "Almaty", which we already know. The number of segments is chosen per city with three measures on the training rows: inertia (elbow), silhouette, and **stability** (adjusted Rand index between the full fit and fits on ten random 80 % subsamples). We take the k with the best silhouette among the values that are stable (mean ARI ≥ 0.9, i.e. the partition barely moves when a fifth of the ads is dropped) and whose smallest cluster has at least 30 ads, so that a "segment" is never a handful of outliers.
+
+# %%
+from sklearn.cluster import KMeans, DBSCAN
+from sklearn.metrics import silhouette_score, adjusted_rand_score
+from sklearn.neighbors import NearestNeighbors
+SEG = ["log_area", "rooms", "floor", "total_floors", "year_built", "lat", "lon"]
+train_df = clean.loc[~test_mask].copy(); test_df = clean.loc[test_mask].copy()
+seg_prep, seg_model, seg_scores, seg_k = {}, {}, {}, {}
+rng = np.random.default_rng(SEED)
+for city in ["Astana", "Almaty"]:
+    d = train_df[train_df["city"] == city]
+    prep = Pipeline([("imp", SimpleImputer(strategy="median")), ("sc", StandardScaler())]).fit(d[SEG])
+    M = prep.transform(d[SEG]); rows = []
+    for k in range(2, 9):
+        km = KMeans(n_clusters=k, n_init=10, random_state=SEED).fit(M)
+        aris = []
+        for _ in range(10):
+            sub = rng.choice(len(M), size=int(0.8 * len(M)), replace=False)
+            aris.append(adjusted_rand_score(km.labels_, KMeans(n_clusters=k, n_init=10, random_state=SEED).fit(M[sub]).predict(M)))
+        rows.append({"k": k, "inertia": km.inertia_, "silhouette": silhouette_score(M, km.labels_, sample_size=2000, random_state=SEED),
+                     "stability (mean ARI)": np.mean(aris), "stability (min ARI)": np.min(aris), "smallest cluster": np.bincount(km.labels_).min()})
+    sc = pd.DataFrame(rows).set_index("k"); seg_scores[city] = sc
+    ok = sc[(sc["stability (mean ARI)"] >= 0.9) & (sc["smallest cluster"] >= 30)]   # stable, and no cluster made of a handful of outliers
+    k_best = int(ok["silhouette"].idxmax()) if len(ok) else int(sc["silhouette"].idxmax())
+    seg_k[city] = k_best; seg_prep[city] = prep; seg_model[city] = KMeans(n_clusters=k_best, n_init=20, random_state=SEED).fit(M)
+    print(f"{city}: {len(d):,} training ads -> chosen k = {k_best}"); display(sc.round(3))
+fig, ax = plt.subplots(2, 3, figsize=(13, 6.5))
+for i, city in enumerate(["Astana", "Almaty"]):
+    sc = seg_scores[city]
+    for j, col in enumerate(["inertia", "silhouette", "stability (mean ARI)"]):
+        ax[i, j].plot(sc.index, sc[col], marker="o"); ax[i, j].axvline(seg_k[city], color="C3", ls="--", lw=1); ax[i, j].set_title(f"{city}: {col}"); ax[i, j].set_xlabel("k")
+plt.tight_layout(); plt.savefig(FIG / "e04_kmeans_selection.png", bbox_inches="tight"); plt.show()
+
+# %% [markdown]
+# # **Choosing k.** *Astana:* the silhouette is flat between k = 3 and 5 (0.205–0.207) and falls from k = 6 on; the inertia bends nowhere sharply; stability decides. k = 3 is the least stable choice of all (mean ARI 0.81, worst subsample 0.55: drop a fifth of the ads and one of the three clusters moves), k = 2 is the most stable (0.99) but only says "old versus new", and **k = 4** combines a silhouette of 0.206 with a stability of 0.97 (worst 0.95) and no cluster under 180 ads. *Almaty:* the silhouette rises to a maximum of **0.250 at k = 5**, which is also the most stable partition (0.97, worst 0.92); k = 3 and k = 6 are unstable (0.64 and 0.66), a sign that at those k the algorithm has two equally good ways to cut the cloud. A silhouette of 0.21–0.25 is low: these are cuts through a continuous market, not separated groups, and the stability measure is what tells us that the cuts are at least reproducible. Before the coordinate fix of Section 2.2 the same procedure produced clusters of one or two ads sitting hundreds of kilometres away, which is how that data error was found.
+
+# %% [markdown]
+# **The segments in original units.** Medians of the inputs per segment, then, and only then, the asking price per m², the median price and the share of ads above 80 M KZT (which were never inputs).
+
+# %%
+def assign_segment(df):
+    lab = pd.Series(index=df.index, dtype=object)
+    for city in ["Astana", "Almaty"]:
+        m = df["city"] == city
+        if m.any(): lab[m] = [f"{city[:3]}-{l}" for l in seg_model[city].predict(seg_prep[city].transform(df.loc[m, SEG]))]
+    return lab
+train_df["segment"] = assign_segment(train_df); test_df["segment"] = assign_segment(test_df)
+prof = train_df.groupby("segment").agg(ads=("id", "size"), area_m2=("area", "median"), rooms=("rooms", "median"), floor=("floor", "median"),
+                                       floors_in_building=("total_floors", "median"), year_built=("year_built", "median"),
+                                       lat=("lat", "median"), lon=("lon", "median"),
+                                       fresh_renovation_share=("condition", lambda s: (s == "fresh_renovation").mean()),
+                                       price_m2_kKZT=("price_m2", lambda s: s.median() / 1e3), median_price_M=("price", lambda s: s.median() / 1e6),
+                                       share_above_80M=("price", lambda s: (s >= 80e6).mean())).round(2)
+prof.to_csv(OUT / "segment_profiles.csv"); display(prof)
+fig, ax = plt.subplots(1, 2, figsize=(13, 5))
+for a, city in zip(ax, ["Astana", "Almaty"]):
+    d = train_df[train_df["city"] == city]
+    for s, g in d.groupby("segment"): a.scatter(g["lon"], g["lat"], s=5, alpha=.5, label=f"{s} (n={len(g)}, {g['price_m2'].median()/1e3:.0f} k/m²)")
+    a.set_title(f"{city}: K-Means segments on the map"); a.set_xlabel("longitude"); a.set_ylabel("latitude"); a.legend(fontsize=8, markerscale=3)
+plt.tight_layout(); plt.savefig(FIG / "e05_segments_map.png", bbox_inches="tight"); plt.show()
+
+# %% [markdown]
+# # **The segments in words.** *Astana (4):* **Ast-3**, the mass market, 912 ads of 45 m² in buildings from 2024, 659 k KZT/m², median 31 M; **Ast-1**, large new family flats, 584 ads of 92 m² and 3 rooms, 667 k/m², median 60 M, 27 % of them above 80 M; **Ast-2**, high floors in tall new towers, 325 ads on the 13th floor of 18, 70 m², 650 k/m²; **Ast-0**, the old low-rise stock, 182 ads of 56 m² in 6-storey buildings from 2006 (median), by far the cheapest per m² (477 k) and in money (26 M), concentrated north-east of the centre on the map. *Almaty (5):* **Alm-4**, the premium high-rise, 283 ads on the 12th floor of 16, 80 m², the dearest per m² (848 k), 32 % above 80 M; **Alm-0**, large flats in new low-rise club houses, 385 ads of 87 m² in 8-storey buildings, 780 k/m², median 67.5 M, 36 % above 80 M; **Alm-3**, the Soviet-era centre, 319 ads of 51 m² in 5-storey buildings from 1976, still 766 k/m² because of where they stand; **Alm-2**, small new flats in the west, 531 ads of 47.5 m², 722 k/m²; **Alm-1**, the new north-eastern outskirts (lat 43.31, lon 76.99 on the map), 331 ads of 57 m², the cheapest per m² in the city (632 k).
+#
+# Price per m², which was never an input, differs by 1.4× between segments in Astana (477 to 667 k) and 1.3× in Almaty (632 to 848 k), so the segments do carry price information, but it is information that the fields already contain (age, height, location), which is what Section 4.4 tests. What the segmentation tells us that a single field does not: the cheap segment of Astana is defined by age *and* place together (old low-rise in the north-east), and in Almaty two segments of the same size and age (Alm-2 and Alm-1) differ by 90 k/m² only through where they are. The maps show the same: Astana's segments overlap everywhere except the old north-east, Almaty's are geographic (west, centre, north-east).
+
