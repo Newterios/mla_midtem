@@ -590,3 +590,48 @@ display(table(["Midterm linear (log price)", "NN: no hidden layer (= linear on l
 # %% [markdown]
 # # **An honest comparison.** scikit-learn's MLP lands at **8.86 ± 0.53 M**, the same as our PyTorch networks (8.82–8.90), so the result is not an artefact of our loop. Against the tuned boosting model (**6.62 ± 0.35 M**) every network is 2.2 M behind, six fold SDs, and the gap is the same on every fold. The reason is the shape of the data, not the training: 3,852 rows with 24 fields, where the strongest effects are thresholds and interactions (a building from 2018 onwards, the top floor, a district border, area × district) that a tree finds with one split, while a network has to approximate each of them with smooth functions learned from a few hundred examples, and the one-hot districts give it sparse inputs it cannot interpolate between. The lecture's example of a network with 1,345 parameters that did no better than a linear model is our result too: on these data a neural network is not worth it. It will become worth it at the Final, when the inputs are text and photo embeddings, which is where networks earn their keep.
 
+# %% [markdown]
+# ## 6. Choosing the model and one evaluation on the saved test split
+#
+# The lecture's checklist for choosing an algorithm fits what the table shows: we have many rows relative to features (3,852 × 24), the relations are non-linear with interactions, the target has outliers (the luxury tail) that pull a linear fit, and the user needs accuracy in money more than coefficients to read. That points to tree ensembles, and the only cost is interpretability, which Section 3.4 recovers through permutation importance.
+#
+# Every model of this notebook on the same five folds, sorted by CV MAE. **The choice is made on the CV column** (the Midterm chose on the test column, which was a slip). Then each model is fitted on all 3,852 training rows and evaluated **once** on the 963 saved test ads, so that the Endterm table is directly comparable with the Midterm table and the Final can be compared with both.
+
+# %%
+order = sorted(registry, key=lambda n: registry[n][1]["CV MAE (M KZT)"])
+best_name = order[0]
+rows = []
+t0 = time.time()
+test_pred = {}
+for n in order:
+    est = clone(registry[n][0]) if not isinstance(registry[n][0], (RandomizedSearchCV,)) else registry[n][0]
+    est.fit(X_train, y_train); p = est.predict(X_test); test_pred[n] = p; registry[n] = (est, registry[n][1])
+    r = registry[n][1]
+    rows.append({"model": n, "CV MAE (M KZT)": f"{r['CV MAE (M KZT)']:.2f} ± {r['CV MAE SD']:.2f}", "CV MdAPE %": round(r["CV MdAPE %"], 1), "CV R²": round(r["CV R²"], 3),
+                 "Test MAE (M KZT)": round(mean_absolute_error(y_test, p) / 1e6, 3), "Test RMSE (M KZT)": round(root_mean_squared_error(y_test, p) / 1e6, 2),
+                 "Test MdAPE %": round(mdape(y_test, p), 2), "Test R²": round(r2_score(y_test, p), 3), "within ±10 %": f"{(np.abs(p - y_test) / y_test <= 0.10).mean():.0%}", "within ±20 %": f"{(np.abs(p - y_test) / y_test <= 0.20).mean():.0%}"})
+results = pd.DataFrame(rows).set_index("model"); results.to_csv(OUT / "results_table.csv")
+print(f"chosen by CV MAE: {best_name}   ({time.time()-t0:.0f} s for the {len(order)} final fits)")
+display(results)
+fig, ax = plt.subplots(1, 2, figsize=(14, 6))
+cvm = pd.Series({n: registry[n][1]["CV MAE (M KZT)"] for n in order}); sd = pd.Series({n: registry[n][1]["CV MAE SD"] for n in order})
+colors = ["C3" if n == best_name else ("grey" if n.startswith(("Dummy", "District", "Midterm")) else "C0") for n in order]
+ax[0].barh(order, cvm, xerr=sd, color=colors); ax[0].invert_yaxis(); ax[0].set_xlabel("5-fold CV MAE, M KZT (± fold SD)"); ax[0].set_title("Model selection: cross-validation on the training rows")
+ax[1].barh(order, results["Test MdAPE %"], color=colors); ax[1].invert_yaxis(); ax[1].axvline(10, color="black", ls="--", lw=1, label="registration goal: 10 %"); ax[1].set_xlabel("test MdAPE, %"); ax[1].set_title("The same models on the saved test split (used once)"); ax[1].legend()
+ax[1].set_yticklabels([]); ax[0].tick_params(axis="y", labelsize=8)
+plt.tight_layout(); plt.savefig(FIG / "e09_model_comparison.png", bbox_inches="tight"); plt.show()
+
+# %%
+best_est = registry[best_name][0]; p_best = test_pred[best_name]
+rng = np.random.default_rng(SEED); boot = []
+for _ in range(2000):
+    i = rng.integers(0, len(y_test), len(y_test)); boot.append((mean_absolute_error(y_test[i], p_best[i]) / 1e6, mdape(y_test[i], p_best[i])))
+ci = np.percentile(np.array(boot), [2.5, 97.5], axis=0)
+print(f"{best_name}: test MAE {mean_absolute_error(y_test, p_best)/1e6:.2f} M KZT (95 % bootstrap interval {ci[0,0]:.2f}–{ci[1,0]:.2f}), test MdAPE {mdape(y_test, p_best):.2f} % ({ci[0,1]:.2f}–{ci[1,1]:.2f})")
+import joblib; joblib.dump(best_est, "models/endterm_best_model.joblib"); print("saved to models/endterm_best_model.joblib")
+
+# %% [markdown]
+# # **The choice and the one test.** Cross-validation ranks the tuned histogram boosting first (6.62 M), XGBoost second (6.64), the boosting with the segment feature third (6.65), LightGBM fourth (6.75), the blend and the default histogram boosting next (6.95 and 7.01), then the forests (8.0), the extra trees and the networks (8.7–8.9), the Midterm linear model (9.10), and the Week 3–4 models below it. The chosen model, **tuned histogram gradient boosting on log price**, reaches on the 963 saved test ads a **MAE of 6.29 M KZT** (95 % bootstrap interval 5.56–7.14), a **MdAPE of 9.13 %** (8.31–9.88) and an **R² of 0.855**; 54 % of the test ads are within ±10 % of the estimate and 84 % within ±20 %, against 8.66 M, 11.27 %, 0.712, 45 % and 73 % for the Midterm's best model on the same ads. The error in money is down by 27 %, and the registration goal of a median error under 10 % is **reached**, with the whole bootstrap interval below 10 %. The test MAE (6.29) sits below the CV estimate (6.62) by less than one fold SD, so the CV estimate was honest.
+#
+# On the test column LightGBM (MAE 6.19 M, R² 0.877), XGBoost (6.27 M, MdAPE 8.94 %), the blend (MdAPE 8.68 %) and the default boosting (9.06 %) look as good as or slightly better than the chosen model on one metric or another, and the six best models are inside each other's bootstrap intervals (5.56–7.14 M). We do **not** switch to LightGBM or the blend: that would be choosing on the test set, the Midterm's slip, and a 0.1 M MAE or 0.45-point MdAPE difference on 963 ads is far inside the interval. The order of the six is a draw; the choice stands with the CV column, and the fact that three boosting libraries and the blend all land at 6.2–6.5 M on the test ads is the best evidence that the number is real.
+
