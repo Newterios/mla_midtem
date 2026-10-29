@@ -488,3 +488,24 @@ display(pd.DataFrame(pca_rows).pivot(index="PCA components", columns="model", va
 #
 # **Does PCA help a model?** No, at any number of components. KNN on the raw 71-column matrix scores 11.13 M; on the components that keep 90 % of the variance 11.48 M, on 10 components 11.33, on 2 components 12.44. Ridge loses even more: 9.10 M without PCA, 10.61 M with 90 % of the variance kept, 11.32 M with 10 components. PCA keeps the variance of the inputs, which in this matrix is dominated by the one-hot district and attribute columns, and throws away low-variance directions that carry price; a model wants the second kind. The Midterm's hand-made KNN on size and location only (10.18 M) beats both KNN on everything (11.13) and KNN on principal components (11.48): choosing columns by what they mean beats choosing directions by how much they vary. PCA stays in this notebook as a description of the table, not as a preprocessing step, which is the same conclusion as Practice 6B and Assignment 2.
 
+# %% [markdown]
+# ### 4.4 Does a segment feature help the supervised model?
+# The Midterm plan promised to try the cluster id as a feature. To keep it leakage-free, K-Means is fitted **inside each CV fold** on the seven segmentation inputs of that fold's training rows (both cities together with k = 6, since a per-city fit inside a pipeline would need the city label; the one-hot city column is already there), and its one-hot segment id is appended to the tuned boosting pipeline.
+
+# %%
+class KMeansSegment(BaseEstimator, TransformerMixin):
+    def __init__(self, n_clusters=6, random_state=SEED): self.n_clusters, self.random_state = n_clusters, random_state
+    def fit(self, X, y=None): self.km_ = KMeans(n_clusters=self.n_clusters, n_init=10, random_state=self.random_state).fit(X); return self
+    def transform(self, X): return np.eye(self.n_clusters)[self.km_.predict(X)]
+    def get_feature_names_out(self, input_features=None): return np.array([f"segment_{i}" for i in range(self.n_clusters)])
+hgb_params = {k.replace("regressor__model__", ""): v for k, v in hgb_search.best_params_.items()}
+pre_seg = ColumnTransformer([("num", Pipeline([("imp", SimpleImputer(strategy="median", add_indicator=True))]), NUM + BOOL),
+                             ("cat", OneHotEncoder(handle_unknown="ignore", min_frequency=10, sparse_output=False), CAT),
+                             ("seg", Pipeline([("imp", SimpleImputer(strategy="median")), ("sc", StandardScaler()), ("km", KMeansSegment(6))]), SEG)])
+seg_est = TransformedTargetRegressor(regressor=Pipeline([("pre", pre_seg), ("model", HistGradientBoostingRegressor(**hgb_params, random_state=SEED))]), func=np.log, inverse_func=np.exp, check_inverse=False)
+cv_eval("Gradient boosting (tuned) + K-Means segment", seg_est)
+display(table(["Gradient boosting (tuned)", "Gradient boosting (tuned) + K-Means segment"]))
+
+# %% [markdown]
+# # **The segment feature changes nothing:** 6.65 ± 0.31 M with it against 6.62 ± 0.35 M without, a difference of 0.03 M, a tenth of the fold SD, and the MdAPE moves by 0.05 points. The boosting model already receives the seven inputs the segments are built from and carves the same regions itself with its own splits, so a cluster id tells it nothing new. The promise of the Midterm plan is kept and the answer is negative; the segment column is left out of the final model, and the segments are used where they are useful, in the error analysis of Section 7.2.
+
