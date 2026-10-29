@@ -509,3 +509,84 @@ display(table(["Gradient boosting (tuned)", "Gradient boosting (tuned) + K-Means
 # %% [markdown]
 # # **The segment feature changes nothing:** 6.65 ± 0.31 M with it against 6.62 ± 0.35 M without, a difference of 0.03 M, a tenth of the fold SD, and the MdAPE moves by 0.05 points. The boosting model already receives the seven inputs the segments are built from and carves the same regions itself with its own splits, so a cluster id tells it nothing new. The promise of the Midterm plan is kept and the answer is negative; the segment column is left out of the final model, and the segments are used where they are useful, in the error analysis of Section 7.2.
 
+# %% [markdown]
+# ## 5. A neural network in PyTorch (Weeks 7–8)
+#
+# **Why.** The Midterm's linear model cannot bend and its tree bends only in steps. A multilayer perceptron learns smooth interactions between area, age, district and coordinates; it is the Week 7–8 tool and the last model class promised in the plan. We build it in PyTorch the way Practice 8 did: the same preprocessing as the linear models (median imputation, standardisation, one-hot encoding, refitted on each training fold), the target is **standardised log(price)**, the loss is **L1** (the absolute error on the log scale is a relative error, which matches MdAPE), the optimiser is Adam with weight decay, mini-batches of 128 rows, and **early stopping** on an inner validation split (15 % of the training fold) with a patience of 30 epochs. Each configuration is cross-validated on the same five folds as every other model.
+#
+# The estimator below wraps all of that in the scikit-learn interface, so that `cross_validate` and the final comparison treat it like any other model.
+
+# %%
+import torch, torch.nn as nn
+torch.set_num_threads(1)  # one thread: torch ships its own OpenMP runtime and xgboost/lightgbm (imported above) use the system one; two runtimes in one process deadlock torch's thread pool on macOS. The networks are small enough that one thread costs nothing.
+
+class TorchMLPRegressor(BaseEstimator, RegressorMixin):
+    """MLP on log(price): hidden layers `hidden` (empty tuple = linear model), ReLU, dropout, L1 loss, Adam, early stopping."""
+    def __init__(self, hidden=(128, 64), dropout=0.1, lr=1e-3, weight_decay=1e-4, batch_size=128, max_epochs=300, patience=30, val_fraction=0.15, seed=SEED):
+        self.hidden, self.dropout, self.lr, self.weight_decay, self.batch_size, self.max_epochs, self.patience, self.val_fraction, self.seed = hidden, dropout, lr, weight_decay, batch_size, max_epochs, patience, val_fraction, seed
+    def _build(self, n_in):
+        layers, d = [], n_in
+        for h in self.hidden: layers += [nn.Linear(d, h), nn.ReLU(), nn.Dropout(self.dropout)]; d = h
+        layers.append(nn.Linear(d, 1)); return nn.Sequential(*layers)
+    def fit(self, X, y):
+        torch.manual_seed(self.seed); rng = np.random.default_rng(self.seed)
+        self.pre_ = make_pre(True).fit(X); Xm = self.pre_.transform(X).astype(np.float32)
+        ly = np.log(y); self.mu_, self.sd_ = ly.mean(), ly.std(); t = ((ly - self.mu_) / self.sd_).astype(np.float32)
+        idx = rng.permutation(len(Xm)); n_val = int(self.val_fraction * len(Xm)); va, tr = idx[:n_val], idx[n_val:]
+        Xtr, ttr = torch.tensor(Xm[tr]), torch.tensor(t[tr]); Xva, yva = torch.tensor(Xm[va]), y[va]
+        self.model_ = self._build(Xm.shape[1]); opt = torch.optim.Adam(self.model_.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+        loss_fn = nn.L1Loss(); best, best_state, wait, self.history_ = np.inf, None, 0, []
+        for epoch in range(self.max_epochs):
+            self.model_.train(); perm = torch.randperm(len(Xtr)); tl = 0.0
+            for i in range(0, len(Xtr), self.batch_size):
+                b = perm[i:i + self.batch_size]; opt.zero_grad(); loss = loss_fn(self.model_(Xtr[b]).squeeze(1), ttr[b]); loss.backward(); opt.step(); tl += loss.item() * len(b)
+            self.model_.eval()
+            with torch.no_grad(): pv = self.model_(Xva).squeeze(1).numpy()
+            val_mae = mean_absolute_error(yva, np.exp(pv * self.sd_ + self.mu_)) / 1e6
+            self.history_.append({"epoch": epoch + 1, "train L1 (log units)": tl / len(Xtr) * self.sd_, "val MAE (M KZT)": val_mae})
+            if val_mae < best - 1e-3: best, wait, best_state = val_mae, 0, {k: v.clone() for k, v in self.model_.state_dict().items()}
+            else:
+                wait += 1
+                if wait >= self.patience: break
+        self.model_.load_state_dict(best_state); self.best_epoch_ = int(np.argmin([h["val MAE (M KZT)"] for h in self.history_])) + 1
+        self.n_params_ = sum(p.numel() for p in self.model_.parameters()); return self
+    def predict(self, X):
+        self.model_.eval()
+        with torch.no_grad(): p = self.model_(torch.tensor(self.pre_.transform(X).astype(np.float32))).squeeze(1).numpy()
+        return np.exp(p * self.sd_ + self.mu_)
+
+nn_configs = {"NN: no hidden layer (= linear on log price)": dict(hidden=()), "NN: 64": dict(hidden=(64,)), "NN: 128-64": dict(hidden=(128, 64)),
+              "NN: 256-128-64": dict(hidden=(256, 128, 64)), "NN: 128-64, lr = 0.05 (too high)": dict(hidden=(128, 64), lr=0.05)}
+nn_rows, nn_hist = {}, {}
+tr0, va0 = next(cv.split(X_train))
+for name, cfg in nn_configs.items():
+    t0 = time.time(); est = TorchMLPRegressor(**cfg)
+    r = cv_eval(name, est, n_jobs=1, register=("too high" not in name), verbose=False)
+    one = TorchMLPRegressor(**cfg).fit(X_train.iloc[tr0], y_train[tr0]); nn_hist[name] = pd.DataFrame(one.history_)
+    nn_rows[name] = {**r, "parameters": one.n_params_, "best epoch (fold 1)": one.best_epoch_, "epochs run (fold 1)": len(one.history_), "time per fit s": (time.time() - t0) / 6}
+    print(f"{name:46s} CV MAE {r['CV MAE (M KZT)']:.2f} ± {r['CV MAE SD']:.2f} M  MdAPE {r['CV MdAPE %']:.1f} %  params {one.n_params_:,}  best epoch {one.best_epoch_}  ({time.time()-t0:.0f} s)")
+nn_t = pd.DataFrame(nn_rows).T.drop(columns=["folds MAE", "fit time s"]).astype(float).round(2)
+display(nn_t)
+fig, ax = plt.subplots(1, len(nn_configs), figsize=(17, 3.6), sharey=True)
+for a, (name, h) in zip(ax, nn_hist.items()):
+    a.plot(h["epoch"], h["val MAE (M KZT)"], color="C0", label="inner validation MAE, M KZT (left axis)")
+    a2 = a.twinx(); a2.plot(h["epoch"], h["train L1 (log units)"], color="C1", alpha=.7, label="training L1 loss, log units (right axis)"); a2.set_ylim(0.05, 0.5)
+    if a is not ax[-1]: a2.set_yticklabels([])
+    a.axvline(nn_rows[name]["best epoch (fold 1)"], color="C3", ls="--", lw=1); a.set_title(name.replace("NN: ", ""), fontsize=9); a.set_xlabel("epoch"); a.set_ylim(5, 16)
+ax[0].set_ylabel("validation MAE, M KZT"); ax[0].legend(fontsize=7, loc="upper right")
+plt.tight_layout(); plt.savefig(FIG / "e08_nn_curves.png", bbox_inches="tight"); plt.show()
+
+# %% [markdown]
+# # **What the networks do.** The network with **no hidden layer** is the linear model on log price trained by Adam instead of least squares, and it lands at **9.26 ± 0.57 M** against 9.10 M for the Midterm's linear model: the same model within a quarter of a fold SD, which is the check that the training loop, the loss and the early stopping are right. Adding hidden layers bends the function a little: **64 units give 8.82 ± 0.60 M**, 128-64 gives 8.90 M and 256-128-64 gives 8.86 ± 0.41 M, all within 0.1 M of each other and about 0.3 M (half a fold SD) below the linear network, with 4,700 to 60,000 parameters for 3,270 inner-training rows. The curves show why there is no more to gain: the training loss keeps falling (to 0.13 log units for the deepest network, which is a 13 % error on its training ads), while the inner-validation MAE stops improving after 10–30 epochs and then wanders by ±0.3 M; the networks memorise, and early stopping, dropout and weight decay are what keep them honest. With a **learning rate of 0.05** the validation MAE jumps between 8.5 and 10.5 M from one epoch to the next and the training loss never settles: Adam's steps overshoot the minimum, early stopping fires on a lucky epoch, and the CV score is the worst of the five (9.43 M). Every fit takes 0.3–0.7 s on one CPU thread of the laptop, so a GPU was never a question on these data.
+
+# %% [markdown]
+# **Cross-check with scikit-learn's MLPRegressor.** The same idea with another implementation (two hidden layers, tanh, L2 penalty 0.1, early stopping), to make sure the PyTorch result is not an artefact of our training loop.
+
+# %%
+from sklearn.neural_network import MLPRegressor
+cv_eval("sklearn MLP 128-64 (tanh, alpha 0.1)", logged(MLPRegressor(hidden_layer_sizes=(128, 64), activation="tanh", alpha=0.1, learning_rate_init=1e-3, max_iter=700, early_stopping=True, validation_fraction=0.15, n_iter_no_change=30, random_state=SEED), scaled=True))
+display(table(["Midterm linear (log price)", "NN: no hidden layer (= linear on log price)", "NN: 64", "NN: 128-64", "NN: 256-128-64", "sklearn MLP 128-64 (tanh, alpha 0.1)", "Gradient boosting (tuned)"]))
+
+# %% [markdown]
+# # **An honest comparison.** scikit-learn's MLP lands at **8.86 ± 0.53 M**, the same as our PyTorch networks (8.82–8.90), so the result is not an artefact of our loop. Against the tuned boosting model (**6.62 ± 0.35 M**) every network is 2.2 M behind, six fold SDs, and the gap is the same on every fold. The reason is the shape of the data, not the training: 3,852 rows with 24 fields, where the strongest effects are thresholds and interactions (a building from 2018 onwards, the top floor, a district border, area × district) that a tree finds with one split, while a network has to approximate each of them with smooth functions learned from a few hundred examples, and the one-hot districts give it sparse inputs it cannot interpolate between. The lecture's example of a network with 1,345 parameters that did no better than a linear model is our result too: on these data a neural network is not worth it. It will become worth it at the Final, when the inputs are text and photo embeddings, which is where networks earn their keep.
+
