@@ -635,3 +635,76 @@ import joblib; joblib.dump(best_est, "models/endterm_best_model.joblib"); print(
 #
 # On the test column LightGBM (MAE 6.19 M, R² 0.877), XGBoost (6.27 M, MdAPE 8.94 %), the blend (MdAPE 8.68 %) and the default boosting (9.06 %) look as good as or slightly better than the chosen model on one metric or another, and the six best models are inside each other's bootstrap intervals (5.56–7.14 M). We do **not** switch to LightGBM or the blend: that would be choosing on the test set, the Midterm's slip, and a 0.1 M MAE or 0.45-point MdAPE difference on 963 ads is far inside the interval. The order of the six is a draw; the choice stands with the CV column, and the fact that three boosting libraries and the blend all land at 6.2–6.5 M on the test ads is the best evidence that the number is real.
 
+# %% [markdown]
+# ## 7. Error analysis of the chosen model
+# ### 7.1 Residuals
+
+# %%
+resid = p_best - y_test; rel = resid / y_test * 100
+fig, ax = plt.subplots(1, 3, figsize=(15, 4))
+ax[0].scatter(y_test / 1e6, p_best / 1e6, s=8, alpha=.4); lim = [min(y_test.min(), p_best.min()) / 1e6, max(y_test.max(), p_best.max()) / 1e6]
+ax[0].plot(lim, lim, "r--"); ax[0].set_xscale("log"); ax[0].set_yscale("log"); ax[0].set_xlabel("actual asking price, M KZT"); ax[0].set_ylabel("predicted, M KZT"); ax[0].set_title(f"{best_name}: predicted vs actual")
+ax[1].scatter(X_test["area"], rel, s=8, alpha=.4); ax[1].axhline(0, color="r", ls="--"); ax[1].set_xlabel("area, m²"); ax[1].set_ylabel("error, % of actual"); ax[1].set_title("Relative error vs area"); ax[1].set_ylim(-80, 120)
+sns.histplot(rel.clip(-80, 120), bins=60, ax=ax[2]); ax[2].axvline(0, color="r", ls="--"); ax[2].set_xlabel("error, % of actual"); ax[2].set_title("Distribution of relative errors")
+plt.tight_layout(); plt.savefig(FIG / "e10_residuals.png", bbox_inches="tight"); plt.show()
+print(f"median signed error {np.median(rel):+.1f} %  |  within ±10 %: {(np.abs(rel) <= 10).mean():.1%}  within ±20 %: {(np.abs(rel) <= 20).mean():.1%}  |  Midterm linear: {(np.abs(test_pred['Midterm linear (log price)'] - y_test) / y_test <= 0.10).mean():.1%} / {(np.abs(test_pred['Midterm linear (log price)'] - y_test) / y_test <= 0.20).mean():.1%}")
+
+# %% [markdown]
+# ### 7.2 Where the error lives: price band, city, size, segment, and the Midterm comparison
+
+# %%
+err = test_df[["id", "city", "district", "rooms", "area", "price", "year_built", "condition", "seller_type", "segment", "description"]].copy()
+err["pred"] = p_best; err["abs_err_M"] = np.abs(resid) / 1e6; err["ape_%"] = np.abs(rel); err["signed_%"] = rel
+err["midterm_ape_%"] = np.abs(test_pred["Midterm linear (log price)"] - y_test) / y_test * 100
+err["price_band"] = pd.cut(err["price"] / 1e6, [0, 20, 35, 50, 80, 150, 1e4], labels=["<20M", "20–35M", "35–50M", "50–80M", "80–150M", ">150M"])
+tabs = []
+for col in ["price_band", "city", "rooms", "segment"]:
+    t = err.groupby(col, observed=True).agg(n=("pred", "size"), MAE_M=("abs_err_M", "mean"), MdAPE=("ape_%", "median"), median_signed=("signed_%", "median"), Midterm_MdAPE=("midterm_ape_%", "median")).round(1)
+    t.index = [f"{col}={i}" for i in t.index]; tabs.append(t)
+seg_err = pd.concat(tabs); seg_err.to_csv(OUT / "error_by_segment.csv"); display(seg_err)
+
+# %% [markdown]
+# # **Where the error lives.** *By price band:* the mass market (20–50 M KZT, 595 of the 963 test ads) has a MdAPE of **7.8–8.1 %**, the band 50–80 M 10.7 %, the band 80–150 M **12.9 %** against 21.9 % for the Midterm model, and the 15 ads above 150 M **16.6 %** against 31.8 %. The ensembles fixed most of what the Midterm diagnosed as "one global model treats the luxury segment like the mass market": the expensive bands improved twice as much as the cheap ones. The *median signed error* shows the remaining bias: cheap ads (<20 M) are over-estimated by 9.4 % (a flat is cheap for a reason that is often not in the fields: rough finish, cash-only sale), and the luxury ads are under-estimated by 7 % (80–150 M) and 14 % (>150 M): with 15 such ads the model shrinks them towards the mass market. *By city:* Almaty 8.7 %, Astana 9.4 %, the same within noise, while the MAE is higher in Almaty (7.0 against 5.6 M) simply because prices there are higher. *By rooms:* 1–3 rooms 8–10 %, 4 rooms 12.4 %, 5 rooms 21.8 % (10 ads), the same pattern as the price bands. *By segment:* the hardest segments are Astana's old low-rise stock (Ast-0, MdAPE 11.1 %, over-estimated by 4.8 %, and the only segment that did not improve on the Midterm's 11.0 %) and its tall-tower flats (Ast-2, 10.9 %), while the mass-market segments of both cities are at 8.1–8.4 %; the largest errors in money are in Almaty's large club-house flats (Alm-0, MAE 14.8 M) and premium high-rise (Alm-4, 9.4 M, under-estimated by 4.6 %). Every row of the table is better than the Midterm's, the smallest gain in the cheapest band and the largest in the most expensive ones.
+
+# %% [markdown]
+# ### 7.3 The worst cases, and what happened to the Midterm's worst cases
+
+# %%
+worst = err.sort_values("ape_%", ascending=False).head(8)
+show = lambda t: display(t[["city", "district", "rooms", "area", "year_built", "condition", "price", "pred", "ape_%", "midterm_ape_%", "description"]]
+                         .assign(price=lambda d: (d["price"] / 1e6).round(1), pred=lambda d: (d["pred"] / 1e6).round(1),
+                                 description=lambda d: d["description"].astype(str).str.replace(r"\s+", " ", regex=True).str.slice(0, 120)).round(1))
+print("8 worst test errors of the chosen model:"); show(worst)
+print("\nthe 8 worst test errors of the Midterm linear model, with the Endterm error on the same ads:"); show(err.sort_values("midterm_ape_%", ascending=False).head(8))
+better = (err["ape_%"] < err["midterm_ape_%"]).mean()
+print(f"\nthe Endterm model is closer than the Midterm model on {better:.0%} of the 963 test ads; its MdAPE on the Midterm's 50 worst ads is {err.nlargest(50, 'midterm_ape_%')['ape_%'].median():.1f} % against {err.nlargest(50, 'midterm_ape_%')['midterm_ape_%'].median():.1f} %")
+
+# %% [markdown]
+# # **The worst cases, and what the Endterm fixed.** The eight worst test errors of the chosen model fall into two groups. Half are **ads that are cheap for a reason that only the text gives**: ad 811 is a 1-room flat at 13.9 M that says "cash only, sale by assignment of rights" (predicted 20.8 M), ad 3316 is a 99 m² flat in rough state at 34 M (predicted 58 M), ad 1730 a 55 m² flat from 1974 that "needs repair" in the centre of Almaty (40.5 against 62.8 M). The other half are **unique objects with no comparables**: a 228 m² penthouse (110 against 171 M), a 276 m² designer duplex at 525 M (predicted 245 M, the one large under-estimate), a 107 m² flat with a mountain view at 85 M (predicted 134 M). The fields describe an ordinary new apartment in each case; the explanation sits in the description, which is the Final's input.
+#
+# The Midterm's eight worst ads tell the Endterm's story: the 364 m² penthouse went from a 133 % error to 33 %, the 56 m² flat in Nura from 68 % to 3 %, the 71 m² flat in Almalinsky from 70 % to 8 %, the 235 m² Medeu apartment from 69 % to 26 %, while four stay above 40 %: the townhouse listed as a flat (1392), the Primera complex flat (1588), a 49 m² flat from 1970 in Turksib (4490, from 75 % to 48 %) and a 156 m² flat in Alatau (2004, from 66 % to 48 %). Over all 963 test ads the Endterm model is closer than the Midterm model on 60 %, and on the Midterm's 50 worst ads its MdAPE is **23.8 % against 46.8 %**: the hard cases were halved, not solved. The ensembles fixed the errors that came from the shape of the price surface (interactions between size, age and location that a linear model could not bend to) and left the errors that come from information the fields do not contain.
+
+# %% [markdown]
+# ### 7.4 Back to the question: which ads are over-priced?
+# The user's rule from Section 1: an ad is flagged when its asking price is more than 20 % above the model estimate for comparable apartments. On the test ads this counts how many sellers ask well above the typical price, and the DBSCAN noise flag from 4.2 tells whether the model's estimate is even trustworthy for that ad (an ad with no similar apartments in the data gets a wide-error warning instead of a flag).
+
+# %%
+err["deviation_%"] = (err["price"] - err["pred"]) / err["pred"] * 100
+near = NearestNeighbors(radius=eps).fit(M_all).radius_neighbors(all_prep.transform(test_df[SEG]), return_distance=False)
+err["no_similar_ads"] = np.array([len(n) < 14 for n in near])   # fewer than min_samples training ads within eps = DBSCAN would call it noise
+flag = err["deviation_%"] > 20
+print(f"test ads asked > 20 % above the estimate: {flag.sum()} of {len(err)} ({flag.mean():.0%}); asked > 20 % below: {(err['deviation_%'] < -20).sum()} ({(err['deviation_%'] < -20).mean():.0%})")
+print(f"ads with no dense group of similar apartments (DBSCAN noise): {err['no_similar_ads'].sum()} — their MdAPE is {err.loc[err['no_similar_ads'], 'ape_%'].median():.1f} % against {err.loc[~err['no_similar_ads'], 'ape_%'].median():.1f} % for the rest")
+print("flag rate by city:", err.groupby("city")["deviation_%"].apply(lambda s: f"{(s > 20).mean():.0%}").to_dict(), " by seller type:", err.groupby("seller_type")["deviation_%"].apply(lambda s: f"{(s > 20).mean():.0%}").to_dict())
+fig, ax = plt.subplots(figsize=(7, 3.4))
+sns.histplot(err["deviation_%"].clip(-60, 100), bins=60, ax=ax); ax.axvline(20, color="C3", ls="--", label="+20 %: over-priced flag"); ax.axvline(-20, color="C2", ls="--", label="−20 %: possible bargain or hidden problem"); ax.set_xlabel("asking price relative to the model estimate, %"); ax.legend(); ax.set_title("Test ads: how far the asking price is from the estimate")
+plt.tight_layout(); plt.savefig(FIG / "e11_overpricing_flags.png", bbox_inches="tight"); plt.show()
+summary = {"best_model": best_name, "test_mae_M": float(mean_absolute_error(y_test, p_best) / 1e6), "test_mdape": float(mdape(y_test, p_best)), "test_r2": float(r2_score(y_test, p_best)),
+           "bootstrap95_mae": ci[:, 0].tolist(), "bootstrap95_mdape": ci[:, 1].tolist(), "segments_k": seg_k, "dbscan_eps": eps, "dbscan_noise_train": int((db_labels == -1).sum()),
+           "pca_components_90": int(np.searchsorted(cum, 0.9) + 1), "flagged_overpriced_share": float(flag.mean()), "rf_params": rf_params, "hgb_params": hgb_params,
+           "n_train": int(len(X_train)), "n_test": int(len(X_test)), "features": FEATURES}
+_ = (OUT / "summary.json").write_text(json.dumps(summary, indent=2, default=str))
+
+# %% [markdown]
+# # **The buyer's flag.** The asking prices of the test ads are centred on the model estimate (median deviation 0 %) with a longer right tail: **93 ads of 963 (10 %) ask more than 20 % above the estimate** for comparable apartments, and 50 (5 %) ask more than 20 % below it. The flag rate is higher in Almaty (11 %) than in Astana (8 %), and, against the folk wisdom about agents, owners and agents over-ask equally often (10 % each). The **28 test ads with no dense group of similar apartments** (the DBSCAN criterion of Section 4.2) have a MdAPE of 12.9 % against 9.0 % for the rest, so the warning is justified: for a penthouse or a flat on the 40th floor the estimate rests on a handful of comparables and a 20 % deviation is not yet evidence of over-pricing. For a buyer the rule is therefore: an ordinary ad more than 20 % above the estimate is in the top tenth of asking prices for its kind and is worth questioning; an ad more than 20 % below it is either a bargain or carries a condition stated in the text (cash only, no title yet), which is exactly what the Final's text features will read.
+
