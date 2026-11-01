@@ -58,7 +58,8 @@
     "Setup:: same encoded inputs (71 columns), standardised log price, L1 loss, Adam, dropout, weight decay, early stopping on 15 % of the fold, same 5 folds",
     "No hidden layer = linear by gradient descent:: 9.26 ± 0.57 M vs 9.10 for the Midterm linear model, the loop is right",
     "64 / 128-64 / 256-128-64 units:: 8.82 / 8.90 / 8.86 M, all within 0.1 M; scikit-learn MLP 8.86 M confirms",
-    "Curves:: training loss keeps falling, validation stops after 10–30 epochs and wanders: memorising; lr 0.05 makes it jump between 8.5 and 10.5 M",
+    "Curves:: training loss keeps falling, validation stops after 10–30 epochs: memorising; lr 0.05 jumps between 8.5 and 10.5 M",
+    "Gradient flow (Practice 8A):: first / last layer gradient ratio for 6 layers: ReLU 0.12, sigmoid 5.5e-5; the 6-layer sigmoid net never leaves the mean",
     "Verdict:: 2.2 M behind tuned boosting (6.62 M) on every fold; 3,852 tabular rows with threshold effects are tree territory, 0.3–0.7 s per fit on one CPU thread"
   ],
   "s8_title": "One table, chosen by CV, tested once: tuned boosting reaches MdAPE 9.1 %, the 10 % goal is met",

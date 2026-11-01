@@ -71,6 +71,17 @@ Settings: {'min_samples_leaf': 5, 'max_leaf_nodes': 7, 'max_iter': 600, 'max_dep
 | segment=Ast-2      |  85 |     6.4 |    10.9 |             3.6 |            13   |
 | segment=Ast-3      | 226 |     3.3 |     8.1 |            -0.1 |            10.2 |
 
+## Neural network: gradient flow with depth (Practice 8A measurement, fold 1)
+Untrained networks of 64 units per hidden layer, one `backward()` on the inner-training rows; then trained with early stopping on the same fold.
+|   hidden layers | activation   |   grad norm, first hidden layer |   grad norm, last hidden layer |   ratio first / last |   best inner-val MAE (M KZT), fold 1 |   best epoch |   epochs run |
+|----------------:|:-------------|--------------------------------:|-------------------------------:|---------------------:|-------------------------------------:|-------------:|-------------:|
+|               1 | relu         |                       0.415     |                        0.415   |            1         |                                8.683 |           25 |           55 |
+|               1 | sigmoid      |                       0.1955    |                        0.1955  |            1         |                                8.323 |          264 |          294 |
+|               3 | relu         |                       0.06789   |                        0.06159 |            1.102     |                                8.625 |           30 |           60 |
+|               3 | sigmoid      |                       0.003935  |                        0.1255  |            0.03135   |                                8.35  |          285 |          300 |
+|               6 | relu         |                       0.003063  |                        0.02476 |            0.1237    |                                8.631 |           28 |           58 |
+|               6 | sigmoid      |                       9.394e-06 |                        0.1704  |            5.512e-05 |                               20.33  |           10 |           35 |
+
 ## Other numbers
 - K-Means: k = {'Astana': 4, 'Almaty': 5}; DBSCAN eps = 1.40, 29 noise ads in training; PCA: 7 components for 90 % of the variance of the 10 numeric fields.
 - Over-pricing flag (> 20 % above the estimate): 10% of the test ads.

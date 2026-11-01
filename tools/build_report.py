@@ -3,7 +3,7 @@
     .venv/bin/python tools/build_report.py
 
 Reads endterm/results_table.csv, summary.json, segment_profiles.csv and
-error_by_segment.csv written by the Endterm notebook.
+error_by_segment.csv and nn_gradient_flow.csv written by the Endterm notebook.
 """
 import json
 from pathlib import Path
@@ -16,6 +16,7 @@ res = pd.read_csv(E / "results_table.csv", index_col="model")
 summ = json.loads((E / "summary.json").read_text())
 seg = pd.read_csv(E / "segment_profiles.csv", index_col=0)
 err = pd.read_csv(E / "error_by_segment.csv", index_col=0)
+grad = pd.read_csv(E / "nn_gradient_flow.csv", index_col=[0, 1])
 mid = res.loc["Midterm linear (log price)"]
 b = summ["bootstrap95_mae"]; bm = summ["bootstrap95_mdape"]
 params = summ["hgb_params"] if "boosting" in summ["best_model"].lower() else summ.get("rf_params")
@@ -35,6 +36,10 @@ Settings: {params}.
 
 ## Error of the chosen model by band, city, rooms and segment (test rows)
 {err.to_markdown()}
+
+## Neural network: gradient flow with depth (Practice 8A measurement, fold 1)
+Untrained networks of 64 units per hidden layer, one `backward()` on the inner-training rows; then trained with early stopping on the same fold.
+{grad.reset_index().to_markdown(index=False, floatfmt=".4g")}
 
 ## Other numbers
 - K-Means: k = {summ['segments_k']}; DBSCAN eps = {summ['dbscan_eps']:.2f}, {summ['dbscan_noise_train']} noise ads in training; PCA: {summ['pca_components_90']} components for 90 % of the variance of the 10 numeric fields.

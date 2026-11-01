@@ -11,6 +11,7 @@ Data: 4,815 krisha.kz ads collected with our own scraper on 4 and 8 October 2026
 | `endterm/results_table.csv` | every model: 5-fold CV mean ± SD and the one test evaluation |
 | `endterm/search_random.csv`, `search_gradient.csv`, `search_xgboost.csv`, `search_lightgbm.csv` | all candidates of the four randomised searches (forest, histogram boosting, XGBoost, LightGBM) |
 | `endterm/segment_profiles.csv`, `endterm/error_by_segment.csv`, `endterm/summary.json` | segment profiles, errors by band / city / rooms / segment, key numbers |
+| `endterm/nn_gradient_flow.csv` | gradient-norm ratio first / last hidden layer and fold-1 training for 1, 3, 6 layers × ReLU / sigmoid (Practice 8A measurement) |
 | `figures/e01…e11_*.png` | every Endterm figure (the Midterm figures are `01…08`) |
 | `models/endterm_best_model.joblib` | the CV-selected model, fitted on all training rows |
 | `slides/Endterm_SE-2424_slides.pptx` | the Endterm presentation (built by `tools/build_slides.py` from the figures and tables) |
