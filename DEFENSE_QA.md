@@ -25,6 +25,9 @@ So that the three stages are comparable: the Endterm numbers can be set next to 
 **What was wrong with `has_detail`?**
 It records whether our scraper managed to open the ad page or only the search card. That is a property of our data collection, not of the apartment; a new ad would always have it equal to True. The Midterm excluded `is_hot` for the same reason and should have excluded this one too.
 
+**The Midterm notebook says 8.65 M for the linear model, your table says 8.66. Which is right?**
+Both. 8.65 M (MdAPE 11.3 %) is what the Midterm notebook reported. In the Endterm the same linear model on log price is re-run on the same split with the Endterm feature list: `has_detail` dropped and 10 ads with coordinates in the wrong city set to missing. That moves it to 8.66 M and 11.27 %, a hundredth of a million, and this re-run is the Midterm reference in every Endterm table, so that all models are compared on identical inputs.
+
 ## C. Ensembles and tuning
 
 **What is the difference between bagging (random forest) and boosting?**

@@ -7,7 +7,7 @@
     "Same data:: 4,815 krisha.kz ads scraped 4–8 Oct 2026; target = asking price, KZT",
     "Same split:: 963 test ads saved at the Midterm, read from the file, used once (Section 6)",
     "Same metric:: MAE in KZT (the user's money) and MdAPE (registration goal: median error < 10 %)",
-    "Midterm result:: linear model on log price, test MAE 8.65 M, MdAPE 11.3 %, goal not reached",
+    "Midterm result:: linear model on log price, test MAE 8.65 M, MdAPE 11.3 %, goal not reached (re-run with the Endterm feature list: 8.66 M, 11.27 %)",
     "Users:: buyer flags an ad > 20 % above the estimate; seller gets a starting price; realtor a reference"
   ],
   "s2_right": [
