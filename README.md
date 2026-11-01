@@ -1,27 +1,35 @@
-# Apartment sale price prediction (Astana, Almaty) — Midterm, SE-2424
+# Apartment asking-price prediction (Astana, Almaty) — Endterm, SE-2424
 
 Team: Rakhat Balgabekov, Aitbek Kaiyrbekuly. Direction 1 (Apartments for sale), regression, target = asking price (KZT).
+Data: 4,815 krisha.kz ads collected with our own scraper on 4 and 8 October 2026. Fixed test split (963 ads, seed 42) saved at the Midterm and reused unchanged.
 
-## Files
+## Endterm files
 | Path | What |
 |---|---|
-| `Midterm_SE-2424_Balgabekov_Kaiyrbekuly.ipynb` | the notebook: data card, cleaning, EDA, models, results, error analysis, conclusions, plan, contributions |
-| `data_collection/scrape_krisha.py` | our scraper (stage 1 search pages, stage 2 ad pages) |
-| `data/raw/listings_raw.jsonl`, `data/raw/details_raw.jsonl` | raw snapshot, untouched field values, `scraped_at` timestamps |
-| `data/raw/collection_log.json`, `data/raw/stage*.log` | when and how the data were collected (search pages and first half of ad pages on 4 Oct 2026, second half on 8 Oct 2026) |
-| `data/raw/html_sample/` | a few raw HTML pages as evidence of the source |
-| `data/clean/krisha_apartments_clean.csv` | cleaned dataset |
-| `data/clean/split_ids.csv` | ids of the fixed test split (seed 42) — reused at the Endterm and the Final |
-| `figures/` | every plot of the notebook + `results_table.csv` |
-| `models/best_model.joblib` | the fitted best model (pipeline + linear model on log price), saved by the notebook |
-| `slides/Midterm_SE-2424_slides.pptx` (+ `.pdf`) | the presentation |
-| `DATA_CARD.md` | the data card as a separate file |
+| `Endterm_SE-2424_Balgabekov_Kaiyrbekuly.ipynb` | **the Endterm notebook**, executed top to bottom: Midterm fixes, ensembles (forest, boosting, XGBoost, LightGBM) + randomised search, K-Means / DBSCAN / PCA, PyTorch network, one comparison on the saved split, error analysis, conclusions, plan for the Final, contributions |
+| `notebooks_src/endterm.py` | the notebook's source in percent format; `tools/build_notebook.py` turns it into the `.ipynb` |
+| `endterm/results_table.csv` | every model: 5-fold CV mean ± SD and the one test evaluation |
+| `endterm/search_random.csv`, `search_gradient.csv`, `search_xgboost.csv`, `search_lightgbm.csv` | all candidates of the four randomised searches (forest, histogram boosting, XGBoost, LightGBM) |
+| `endterm/segment_profiles.csv`, `endterm/error_by_segment.csv`, `endterm/summary.json` | segment profiles, errors by band / city / rooms / segment, key numbers |
+| `figures/e01…e11_*.png` | every Endterm figure (the Midterm figures are `01…08`) |
+| `models/endterm_best_model.joblib` | the CV-selected model, fitted on all training rows |
+| `slides/Endterm_SE-2424_slides.pptx` | the Endterm presentation (built by `tools/build_slides.py` from the figures and tables) |
+| `ENDTERM_REPORT.md` | the Endterm tables in one file (built by `tools/build_report.py`) |
+| `DEFENSE_QA.md` | questions we expect at the defense, with our answers |
+| `data_collection/scrub_personal_data.py` | the contact-data check of the free text (Midterm fix) |
+| `Midterm_SE-2424_Balgabekov_Kaiyrbekuly.ipynb`, `DATA_CARD.md`, `data/`, `data_collection/scrape_krisha.py`, `figures/0*.png`, `slides/Midterm_*` | the Midterm submission, retained with the data-card note, masked handles and corrected final-review statement |
+
+## Result in one line
+The CV-selected model is tuned histogram gradient boosting on log(price). See `endterm/summary.json` and Section 6 of the notebook for the test MAE, MdAPE and the bootstrap interval; the Midterm linear model on the same 963 test ads has MAE 8.65 M KZT and MdAPE 11.3 %.
 
 ## How to reproduce
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
-.venv/bin/python data_collection/scrape_krisha.py --stage listings   # search pages (~5 min)
-.venv/bin/python data_collection/scrape_krisha.py --stage details    # ad pages (~1 h, polite delays)
-.venv/bin/jupyter nbconvert --to notebook --execute --inplace Midterm_SE-2424_Balgabekov_Kaiyrbekuly.ipynb
+.venv/bin/python data_collection/scrub_personal_data.py            # idempotent contact-data check
+.venv/bin/python tools/build_notebook.py notebooks_src/endterm.py Endterm_SE-2424_Balgabekov_Kaiyrbekuly.ipynb
+.venv/bin/jupyter nbconvert --to notebook --execute --inplace --ExecutePreprocessor.timeout=3600 Endterm_SE-2424_Balgabekov_Kaiyrbekuly.ipynb
+.venv/bin/python tools/fill_text.py          # interpretation texts from tools/texts_endterm.md
+.venv/bin/python tools/build_slides.py
+.venv/bin/python tools/build_report.py        # ENDTERM_REPORT.md from the endterm/ tables
 ```
-The notebook runs top to bottom from the raw files in `data/raw/`.
+The notebook runs from `data/clean/krisha_apartments_clean.csv` and `data/clean/split_ids.csv` in about 8 minutes on a laptop (no GPU; the PyTorch network trains on the CPU in seconds). The Midterm notebook still runs from the raw files in `data/raw/`.
