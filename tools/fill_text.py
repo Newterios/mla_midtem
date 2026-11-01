@@ -34,7 +34,8 @@ NB.write_text(json.dumps(nb, ensure_ascii=False, indent=1), encoding="utf-8")
 src = SRC.read_text(encoding="utf-8"); n_src = 0
 for key, txt in texts.items():
     if key in src:
-        src = src.replace(key, "\n".join("# " + l if l else "#" for l in txt.split("\n"))); n_src += 1
+        first, *rest = txt.split("\n")   # the placeholder line already starts with "# "
+        src = src.replace(key, "\n".join([first] + ["# " + l if l else "#" for l in rest])); n_src += 1
 SRC.write_text(src, encoding="utf-8")
 left = re.findall(r"⟦W[^⟧]+⟧", "".join("".join(c["source"]) for c in nb["cells"]))
 print(f"filled {n_nb} placeholders in the notebook, {n_src} in the source; still empty: {left or 'none'}")
