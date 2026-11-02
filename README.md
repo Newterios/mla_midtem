@@ -18,7 +18,7 @@ Data: 4,815 krisha.kz ads collected with our own scraper on 4 and 8 October 2026
 | `ENDTERM_REPORT.md` | the Endterm tables in one file (built by `tools/build_report.py`) |
 | `DEFENSE_QA.md` | questions we expect at the defense, with our answers |
 | `data_collection/scrub_personal_data.py` | the contact-data check of the free text (Midterm fix) |
-| `Midterm_SE-2424_Balgabekov_Kaiyrbekuly.ipynb`, `DATA_CARD.md`, `data/`, `data_collection/scrape_krisha.py`, `figures/0*.png`, `slides/Midterm_*` | the Midterm submission, retained with the data-card note, masked handles and corrected final-review statement |
+| `Midterm_SE-2424_Balgabekov_Kaiyrbekuly.ipynb`, `DATA_CARD.md`, `data/`, `data_collection/scrape_krisha.py`, `figures/0*.png`, `slides/Midterm_*` | the Midterm submission, unchanged except the data-card note and the masked handles |
 
 ## Result in one line
 The CV-selected model is tuned histogram gradient boosting on log(price). See `endterm/summary.json` and Section 6 of the notebook for the test MAE, MdAPE and the bootstrap interval; the Midterm notebook reported MAE 8.65 M KZT and MdAPE 11.3 % for its linear model on the same 963 test ads; re-run in Section 2.3 with the Endterm feature list (no `has_detail`, 10 wrong coordinates set to missing) the same model gives 8.66 M and 11.27 %, which is the Midterm reference used in the Endterm tables.
