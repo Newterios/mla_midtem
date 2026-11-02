@@ -116,7 +116,7 @@
   ],
   "s10_right": [
     "Limitations:: asking ≠ sale price; one October snapshot, one site; 15 luxury test ads; the test set is seen at every stage; tuning on the comparison folds",
-    "Final 1 · text:: TF-IDF of the sanitised description on cross-fitted residuals of the boosting model, judged on the worst cases",
+    "Final 1 · text:: TF-IDF of the sanitised description (already collected with each ad, same id, public page) on cross-fitted residuals of the boosting model, judged on the worst cases",
     "Final 2 · photos:: pretrained-CNN embeddings of up to 3 photos per ad as a second residual correction",
     "Final 3 · app:: fields + text + photos → estimate, segment-based interval, over-pricing flag with the “few comparables” warning",
     "Final 4 · honest check:: re-scrape in November as a temporal hold-out; the saved split stays unchanged"

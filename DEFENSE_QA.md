@@ -7,6 +7,10 @@ We predict the asking price of an apartment in Astana or Almaty from the fields 
 
 ## B. Questions about the workflow
 
+**What did the Midterm feedback say, and what did you change because of it?**
+82/100 and no written comments. We reviewed the Midterm against its rubric ourselves and took the weaknesses from its own error analysis; the change log in Section 2 lists six fixes with before/after evidence: the sharpened question, the contact-data scrub of the free text (7 handles masked), `has_detail` dropped (8.65 → 8.66 M, nothing lost), 10 wrong coordinates set to missing, model choice by CV only, and ensembles for the expensive bands (MdAPE above 80 M from 22–32 % to 13–17 %).
+
+
 **Why MAE in KZT as the main metric, and why MdAPE too?**
 The user thinks in money, so the error has to be in money; MAE is robust to the few luxury ads that dominate RMSE. MdAPE is there because our registration goal was a *relative* median error under 10 %, and because a 5 M error means something different on a 20 M flat and on a 200 M one.
 
@@ -111,6 +115,10 @@ As a check: it is the Midterm linear model trained by gradient descent, and it r
 
 ## F. Results and errors
 
+**Where do the text and the photos for the Final come from, and may you use them?**
+From the same ad pages we already scraped in October: the description and the photo URLs are stored in the raw snapshot under the same ad id as the structured fields, so they attach to the same 4,815 objects and the same saved split without new collection. The ad pages are public, need no login and are allowed by krisha.kz's `robots.txt` (checked 4 Oct 2026, see the data card). The description goes through the contact-data scrub first; photos are downloaded only to compute embeddings and are not stored or shared. A source stays in the Final model only if it lowers the CV MAE by more than one fold SD, about 0.35 M.
+
+
 **What is the answer to the question?**
 Structured fields give a median error of 9.1 % and a MAE of 6.3 M KZT on the saved test ads (Midterm: 11.3 %, 8.7 M; realtor rule: 14.3 %, 9.9 M), so the 10 % goal is reached. Measured against that estimate, 93 of the 963 test ads (10 %) ask more than 20 % above what comparable apartments go for, owners and agents equally often, a little more often in Almaty (11 %) than in Astana (8 %); 5 % ask more than 20 % below. The error grew with price at the Midterm and still does, but far less: MdAPE 12.9 % at 80–150 M (was 21.9 %) and 16.6 % above 150 M (was 31.8 %).
 
@@ -122,6 +130,19 @@ A 2,000-sample bootstrap of the 963 test ads gives a 95 % interval of 5.56–7.1
 
 **What would you do with more time?**
 Text features from the description (planned for the Final), a temporal hold-out (re-scrape a month later and test on it), quantile regression to give the buyer an interval instead of a point, and a separate luxury model or sample weights for the thin tail.
+
+## Defense plan: 7 minutes of slides, 5 of questions
+Both partners speak; either may be asked about any part. Roughly 40 seconds per slide.
+
+| Slides | Speaker | Time |
+|---|---|---|
+| 1–3 question, what changed, bias/variance of tree / forest / boosting | Aitbek | 2:00 |
+| 4–6 tuning and importance, K-Means segments, DBSCAN and PCA | Rakhat | 2:30 |
+| 7–8 the network, the results table and the one test | Aitbek | 1:30 |
+| 9 error analysis and the over-pricing flag | Rakhat | 0:40 |
+| 10 conclusions, limitations, plan for the Final | Aitbek | 0:20 |
+
+Hand-over lines: after slide 3 "Rakhat tuned these and looked for structure in the data", after slide 6 "Aitbek checked whether a network does better", after slide 8 "Rakhat looked at where the model is wrong", after slide 9 "one slide to close".
 
 ## G. Partner's part, in one breath each
 - *Rakhat on the network:* "Same encoded inputs as the linear model, standardised log price, L1 loss, Adam, early stopping on an inner split, 5-fold CV; the one-hidden-layer net ties the linear model, deeper nets are a little better but all lose to tuned boosting because the data are small and tabular."

@@ -7847,6 +7847,55 @@ a.anchor-link {
 </tr>
 </tbody>
 </table>
+<p><strong>Change log.</strong> The Midterm came back with 82/100 and no written comments, so the weaknesses below come from our own review of the Midterm against its rubric and from the Midterm's own error analysis. Each fix names where its before/after evidence is.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Weakness</th>
+<th>Fix</th>
+<th>Before → after, where to look</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>The question was generic ("how accurately can we predict the price")</td>
+<td>restated as the user's question: which ads deviate from comparable apartments, and by how much</td>
+<td>Section 1; the flag of 7.4 marks 93 of the 963 test ads (9.7 %) as more than 20 % above the estimate</td>
+</tr>
+<tr>
+<td>2</td>
+<td>The free text had never been checked for contact data, although the data card said none is stored</td>
+<td><code>scrub_personal_data.py</code> masks phone numbers, e-mails and handles in the raw and the cleaned file</td>
+<td>7 realtor handles → 0; no phone numbers (krisha.kz strips them); 2.1 and the data card</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>has_detail</code> (whether our scraper opened the ad page) was a feature: a property of our collection, not of the apartment</td>
+<td>dropped; 24 features remain</td>
+<td>Midterm linear model, test MAE 8.65 M with it → 8.66 M without (2.3, 6): nothing lost</td>
+</tr>
+<tr>
+<td>4</td>
+<td>10 ads carried map coordinates in another city (noticed on the segment map)</td>
+<td>coordinates outside a box around the city set to missing and imputed inside the pipeline</td>
+<td>7 Astana + 3 Almaty ads, listed in 2.2; 23 ads without coordinates in total</td>
+</tr>
+<tr>
+<td>5</td>
+<td>The Midterm picked its final model by test MAE</td>
+<td>every choice by 5-fold CV on the training rows; the test rows are used once, in Section 6</td>
+<td>the CV column of every table; Section 6</td>
+</tr>
+<tr>
+<td>6</td>
+<td>The largest errors were in the expensive bands, and the single tree had the largest fold-to-fold spread</td>
+<td>tree ensembles, tuned by randomised search</td>
+<td>MdAPE above 80 M KZT 22–32 % → 13–17 % (7.2); fold SD 0.73 for the tree → 0.37 for the forest (3.1)</td>
+</tr>
+</tbody>
+</table>
 <h3 id="2.1-Data-ethics-check:-contact-data-in-the-free-text">2.1 Data ethics check: contact data in the free text<a class="anchor-link" href="#2.1-Data-ethics-check:-contact-data-in-the-free-text">¶</a></h3><p>The Midterm data card said that no seller name or phone number is stored. That was true for the structured fields, but the free-text <code>description</code> written by sellers had never been checked. <code>data_collection/scrub_personal_data.py</code> now scans the raw snapshot and the cleaned file for phone numbers, e-mail addresses and messenger or social-media handles and masks them with <code>[contact removed]</code>. Result: krisha.kz itself strips phone numbers from the description text, so <strong>no phone number</strong> was found; <strong>7 ads</strong> carried a realtor's social-media handle, which is now masked. The structured fields, the target and the split are untouched, so every Midterm number stays valid.</p>
 </div>
 </div>
@@ -12384,7 +12433,7 @@ flag rate by city: {'Almaty': '11%', 'Astana': '8%'}  by seller type: {'owner': 
 <li><strong>Tuning on the same folds as the comparison</strong> makes the tuned models' CV scores slightly optimistic; the test column, where the tuned and the default boosting are 0.3 M apart, shows the size of that effect.</li>
 <li><strong>The worst errors are text-only.</strong> "Cash only", "assignment of rights", "needs repair", "designer duplex" are in the description, not in the fields; no structured model will fix them.</li>
 </ol>
-<p><strong>Plan for the Final.</strong> (1) <strong>Text:</strong> TF-IDF of the sanitised description (prices and digits removed) fitted on the residuals of the boosting model, cross-fitted so that the text model never sees its own training residuals; the worst cases above are the test of whether it works. (2) <strong>Photos:</strong> embeddings of up to three listing photos from a pretrained CNN (the photo URLs are already collected), as a second residual correction, with the same honest check. (3) <strong>A local app</strong> that takes the fields, the text and the photos and returns the estimate, the ±interval from the segment's error, and the over-pricing flag with the "few comparables" warning. (4) <strong>A temporal hold-out</strong>: re-scrape in November and report the error on ads the model has never seen, which answers limitation 4. The split in <code>data/clean/split_ids.csv</code> stays unchanged, so the Final table will sit next to this one and the Midterm's.</p>
+<p><strong>Plan for the Final.</strong> (1) <strong>Text:</strong> TF-IDF of the sanitised description (prices and digits removed) fitted on the residuals of the boosting model, cross-fitted so that the text model never sees its own training residuals; the worst cases above are the test of whether it works. (2) <strong>Photos:</strong> embeddings of up to three listing photos from a pretrained CNN (the photo URLs are already collected), as a second residual correction, with the same honest check. <strong>Access and linkage.</strong> Both sources are already in our raw snapshot under the same ad id: the description and the photo URLs are fields of the public ad page that our scraper read in October (<code>robots.txt</code> allows the ad pages, no login is needed; see the data card), so no new collection is required to attach them to the 4,815 objects and to the saved split. The description goes through the contact-data scrub of 2.1 first; photos are downloaded only to compute embeddings and are neither stored nor redistributed. Text is the source that targets the weakness we measured: the worst test errors of 7.3 are explained by words that no structured field carries. <strong>How the value is tested:</strong> each source is added as a residual correction, cross-validated on the same five folds, and kept only if it lowers the CV MAE by more than one fold SD (about 0.35 M); the Final table then sits next to this one and the Midterm's, with one row per source. (3) <strong>A local app</strong> that takes the fields, the text and the photos and returns the estimate, the ±interval from the segment's error, and the over-pricing flag with the "few comparables" warning. (4) <strong>A temporal hold-out</strong>: re-scrape in November and report the error on ads the model has never seen, which answers limitation 4. The split in <code>data/clean/split_ids.csv</code> stays unchanged, so the Final table will sit next to this one and the Midterm's.</p>
 </div>
 </div>
 </div>
