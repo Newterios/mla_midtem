@@ -3,8 +3,11 @@
 __pycache__/
 .ipynb_checkpoints/
 data/clean/clean_backup.csv
-# local build helpers, not part of the submission
 build_data_card.py
 slides_build/
 slides/talk_script.md
 slides/talk_script.pdf
+tools/
+notebooks_src/
+DEFENSE_QA.md
+*.html
