@@ -1,0 +1,369 @@
+{
+  "n_ads": 4815,
+  "n_pairs": 48,
+  "pairs_by_signal": {
+    "phash+emb": 28,
+    "struct": 6,
+    "phash": 6,
+    "text": 2,
+    "phash+emb+struct+text": 2,
+    "emb+struct+text": 1,
+    "emb": 1,
+    "struct+text": 1,
+    "phash+emb+struct": 1
+  },
+  "pairs_by_tier": {
+    "near": 30,
+    "same_flat": 18
+  },
+  "image_pairs_matched": 334,
+  "image_pairs_stock_hub": 119,
+  "all_links": {
+    "groups": 43,
+    "ads_in_groups": 90,
+    "group_sizes": {
+      "2": 39,
+      "3": 4
+    },
+    "groups_crossing_split": 13,
+    "test_ads_with_train_twin": 13,
+    "test_ads_with_train_twin_pct": 1.35,
+    "train_ads_in_groups": 75
+  },
+  "same_flat": {
+    "groups": 18,
+    "ads_in_groups": 36,
+    "group_sizes": {
+      "2": 18
+    },
+    "groups_crossing_split": 7,
+    "test_ads_with_train_twin": 7,
+    "test_ads_with_train_twin_pct": 0.73,
+    "train_ads_in_groups": 29
+  },
+  "example_pairs": [
+    {
+      "id_a": 1013380995,
+      "id_b": 1014502360,
+      "signals": "emb",
+      "tier": "same_flat",
+      "split_a": "train",
+      "split_b": "test"
+    },
+    {
+      "id_a": 1010980541,
+      "id_b": 1010980654,
+      "signals": "emb+struct+text",
+      "tier": "same_flat",
+      "split_a": "train",
+      "split_b": "test"
+    },
+    {
+      "id_a": 1007686553,
+      "id_b": 1015552280,
+      "signals": "phash",
+      "tier": "same_flat",
+      "split_a": "train",
+      "split_b": "train"
+    },
+    {
+      "id_a": 1009050768,
+      "id_b": 1014569537,
+      "signals": "phash+emb",
+      "tier": "same_flat",
+      "split_a": "train",
+      "split_b": "train"
+    },
+    {
+      "id_a": 1014297341,
+      "id_b": 1015691512,
+      "signals": "phash+emb",
+      "tier": "same_flat",
+      "split_a": "test",
+      "split_b": "train"
+    },
+    {
+      "id_a": 1016191648,
+      "id_b": 1016280277,
+      "signals": "phash+emb+struct",
+      "tier": "same_flat",
+      "split_a": "train",
+      "split_b": "train"
+    },
+    {
+      "id_a": 1014980469,
+      "id_b": 1015600074,
+      "signals": "phash+emb+struct+text",
+      "tier": "same_flat",
+      "split_a": "train",
+      "split_b": "test"
+    },
+    {
+      "id_a": 1015734346,
+      "id_b": 1016057446,
+      "signals": "phash+emb+struct+text",
+      "tier": "same_flat",
+      "split_a": "train",
+      "split_b": "train"
+    },
+    {
+      "id_a": 1002889086,
+      "id_b": 1014159270,
+      "signals": "struct",
+      "tier": "same_flat",
+      "split_a": "train",
+      "split_b": "test"
+    },
+    {
+      "id_a": 1010876411,
+      "id_b": 1016015926,
+      "signals": "struct",
+      "tier": "same_flat",
+      "split_a": "train",
+      "split_b": "train"
+    },
+    {
+      "id_a": 1013393977,
+      "id_b": 1013395726,
+      "signals": "struct+text",
+      "tier": "same_flat",
+      "split_a": "train",
+      "split_b": "train"
+    },
+    {
+      "id_a": 1008424736,
+      "id_b": 1015772155,
+      "signals": "text",
+      "tier": "same_flat",
+      "split_a": "train",
+      "split_b": "train"
+    },
+    {
+      "id_a": 1008831681,
+      "id_b": 1011374370,
+      "signals": "text",
+      "tier": "same_flat",
+      "split_a": "train",
+      "split_b": "train"
+    },
+    {
+      "id_a": 1007686553,
+      "id_b": 1015552249,
+      "signals": "phash",
+      "tier": "near",
+      "split_a": "train",
+      "split_b": "train"
+    }
+  ],
+  "train_only_groups_equal_all_ads_groups": true,
+  "n_groups_per_scheme": {
+    "dup": 3820,
+    "building": 1912,
+    "spatial1km": 399,
+    "spatial3km": 89
+  },
+  "recommended_folds_moved_ads": 26,
+  "cv_schemes": [
+    {
+      "scheme": "random",
+      "description": "Random KFold (Endterm)",
+      "cv_mae_mean": 6.7197,
+      "seed_sd": 0.0576,
+      "fold_sd_mean": 0.3707,
+      "mdape": 8.9595,
+      "r2": 0.8469,
+      "n_seeds": 20,
+      "delta_vs_random_M": 0.0
+    },
+    {
+      "scheme": "random_dupfix",
+      "description": "Same KFold, duplicate groups kept together",
+      "cv_mae_mean": 6.7344,
+      "seed_sd": 0.0644,
+      "fold_sd_mean": 0.3667,
+      "mdape": 8.9552,
+      "r2": 0.8461,
+      "n_seeds": 20,
+      "delta_vs_random_M": 0.0147
+    },
+    {
+      "scheme": "dup",
+      "description": "GroupKFold by duplicate group",
+      "cv_mae_mean": 6.7238,
+      "seed_sd": 0.0806,
+      "fold_sd_mean": 0.3724,
+      "mdape": 8.9217,
+      "r2": 0.8474,
+      "n_seeds": 10,
+      "delta_vs_random_M": 0.0041
+    },
+    {
+      "scheme": "building",
+      "description": "GroupKFold by building (+dups)",
+      "cv_mae_mean": 7.4901,
+      "seed_sd": 0.1143,
+      "fold_sd_mean": 0.5689,
+      "mdape": 9.9161,
+      "r2": 0.816,
+      "n_seeds": 10,
+      "delta_vs_random_M": 0.7704
+    },
+    {
+      "scheme": "spatial1km",
+      "description": "Spatial 1 km blocks (+dups)",
+      "cv_mae_mean": 7.6921,
+      "seed_sd": 0.0929,
+      "fold_sd_mean": 0.6996,
+      "mdape": 10.2592,
+      "r2": 0.8128,
+      "n_seeds": 10,
+      "delta_vs_random_M": 0.9724
+    },
+    {
+      "scheme": "spatial3km",
+      "description": "Spatial 3 km blocks (+dups)",
+      "cv_mae_mean": 8.3949,
+      "seed_sd": 0.1871,
+      "fold_sd_mean": 1.1766,
+      "mdape": 11.0186,
+      "r2": 0.7768,
+      "n_seeds": 10,
+      "delta_vs_random_M": 1.6752
+    },
+    {
+      "scheme": "placebo",
+      "description": "Placebo: same KFold, 26 random non-duplicate ads moved",
+      "cv_mae_mean": 6.7166,
+      "seed_sd": 0.0688,
+      "fold_sd_mean": 0.3754,
+      "mdape": 8.8972,
+      "r2": 0.8466,
+      "n_seeds": 20,
+      "delta_vs_random_M": -0.0031
+    }
+  ],
+  "paired_dupfix_minus_random_M": {
+    "per_seed": {
+      "1": 0.0213,
+      "2": 0.0583,
+      "3": 0.0708,
+      "4": 0.0968,
+      "5": -0.038,
+      "6": 0.0402,
+      "7": -0.0079,
+      "8": 0.0027,
+      "9": -0.0098,
+      "10": -0.0127,
+      "11": -0.0033,
+      "12": 0.0846,
+      "13": -0.135,
+      "14": 0.0443,
+      "15": 0.0499,
+      "16": -0.004,
+      "17": 0.0069,
+      "18": -0.0757,
+      "19": -0.0017,
+      "42": 0.107
+    },
+    "mean": 0.0147,
+    "sd": 0.0582
+  },
+  "recommended_folds": {
+    "file": "outputs/leakage/folds_group.csv",
+    "scheme": "Endterm KFold(5, shuffle, 42), duplicate groups moved whole into one fold",
+    "base_cv_mae_M": 6.723,
+    "base_cv_sd_M": 0.264,
+    "base_folds_mae_M": [
+      6.371,
+      6.901,
+      7.109,
+      6.513,
+      6.721
+    ],
+    "fold_sizes": [
+      775,
+      770,
+      767,
+      771,
+      769
+    ],
+    "rule_margin_M": 0.3535,
+    "rule_threshold_M": 6.3695,
+    "rule_note": "keep a variant only if its CV MAE on these folds < base on these folds - fixed Endterm margin (0.3535 M)"
+  },
+  "paired_placebo_minus_random_M": {
+    "per_seed": {
+      "1": 0.0171,
+      "2": -0.0206,
+      "3": 0.0387,
+      "4": -0.002,
+      "5": -0.0397,
+      "6": -0.0481,
+      "7": -0.0273,
+      "8": 0.0709,
+      "9": -0.0842,
+      "10": 0.0095,
+      "11": -0.0248,
+      "12": 0.0599,
+      "13": -0.0711,
+      "14": 0.0447,
+      "15": -0.0032,
+      "16": 0.0376,
+      "17": -0.0067,
+      "18": -0.1129,
+      "19": 0.0423,
+      "42": 0.0585
+    },
+    "mean": -0.0031,
+    "sd": 0.0511
+  },
+  "paired_dupfix_minus_placebo_M": {
+    "per_seed": {
+      "1": 0.0042,
+      "2": 0.0789,
+      "3": 0.0321,
+      "4": 0.0988,
+      "5": 0.0017,
+      "6": 0.0883,
+      "7": 0.0194,
+      "8": -0.0682,
+      "9": 0.0744,
+      "10": -0.0222,
+      "11": 0.0215,
+      "12": 0.0247,
+      "13": -0.0639,
+      "14": -0.0004,
+      "15": 0.0531,
+      "16": -0.0416,
+      "17": 0.0136,
+      "18": 0.0372,
+      "19": -0.044,
+      "42": 0.0485
+    },
+    "mean": 0.0178,
+    "sd": 0.0487
+  },
+  "twin_analysis": {
+    "train_ads_in_dup_groups": 62,
+    "train_ads_with_twin_in_other_fold_random42": 50,
+    "twin_in_other_fold": {
+      "n": 50,
+      "random_mae_M": 4.197,
+      "repaired_mae_M": 5.604,
+      "random_mdape": 5.6,
+      "repaired_mdape": 5.0
+    },
+    "no_group": {
+      "n": 3790,
+      "random_mae_M": 6.66,
+      "repaired_mae_M": 6.748,
+      "random_mdape": 8.97,
+      "repaired_mdape": 8.89
+    },
+    "twin_price_as_prediction": {
+      "n": 62,
+      "mdape": 3.49,
+      "mae_M": 2.625
+    }
+  }
+}
