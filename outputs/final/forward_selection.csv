@@ -1,0 +1,10 @@
+step,added,blocks,cv_mae_M,cv_mae_sd_M,gain_M,step_sd_M,step_margin_M,folds_better_than_prev,passes_step_rule,delta_vs_base_M,set_passes_vs_base,strategy,folds,folds_mae_M
+1,photo,photo,6.4824,0.3209,0.2406,0.264,0.3535,5,False,-0.2406,False,A,group,6.198 / 6.869 / 6.880 / 6.267 / 6.198
+2,text_emb,photo+text_emb,6.3499,0.3481,0.1325,0.3209,0.3535,5,False,-0.3731,True,A,group,6.002 / 6.809 / 6.728 / 6.030 / 6.181
+3,geo,photo+text_emb+geo,6.2578,0.3465,0.0921,0.3481,0.3535,5,False,-0.4652,True,A,group,5.972 / 6.681 / 6.667 / 5.878 / 6.091
+4,text,photo+text_emb+geo+text,6.2483,0.368,0.0096,0.3465,0.3535,2,False,-0.4747,True,A,group,5.911 / 6.685 / 6.680 / 5.833 / 6.133
+5,text_flags,photo+text_emb+geo+text+text_flags,6.2465,0.3723,0.0018,0.368,0.368,3,False,-0.4766,True,A,group,5.896 / 6.692 / 6.679 / 5.832 / 6.133
+6,rawfields,photo+text_emb+geo+text+text_flags+rawfields,6.2458,0.3692,0.0006,0.3723,0.3723,1,False,-0.4772,True,A,group,5.896 / 6.684 / 6.679 / 5.837 / 6.133
+1,geo,geo,6.5097,0.3273,0.2133,0.264,0.3535,4,False,-0.2133,False,B,group,6.392 / 6.831 / 6.961 / 6.183 / 6.182
+2,text_flags,geo+text_flags,6.4082,0.2735,0.1015,0.3273,0.3535,4,False,-0.3148,False,B,group,6.224 / 6.693 / 6.779 / 6.099 / 6.246
+3,rawfields,geo+text_flags+rawfields,6.3977,0.3125,0.0105,0.2735,0.3535,2,False,-0.3253,False,B,group,6.296 / 6.554 / 6.914 / 6.223 / 6.002

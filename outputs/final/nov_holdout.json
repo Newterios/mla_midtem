@@ -1,0 +1,48 @@
+{
+ "n_nov": 1507,
+ "reduced_num": [
+  "area",
+  "log_area",
+  "rooms",
+  "floor",
+  "total_floors",
+  "year_built",
+  "ceiling_height",
+  "has_complex",
+  "mortgaged",
+  "is_urgent"
+ ],
+ "reduced_cat": [
+  "city",
+  "district",
+  "building_type",
+  "condition",
+  "bathroom",
+  "furnished",
+  "seller_type"
+ ],
+ "reduced_cv": {
+  "variant": "reduced features (Nov fields)",
+  "cv_mae_M": 8.1199,
+  "cv_mae_sd_M": 0.2713,
+  "cv_mdape": 10.734,
+  "cv_r2": 0.7961,
+  "folds_mae_M": [
+   7.613,
+   8.083,
+   8.382,
+   8.283,
+   8.239
+  ],
+  "delta_vs_base_M": 1.5039,
+  "folds_better": 0,
+  "passes_1sd_rule": false
+ },
+ "reduced_oct_test_mae_M": 7.595652735652389,
+ "reduced_nov_mae_M": 7.719472961688635,
+ "reduced_oct_test_mdape": 10.156840910256344,
+ "reduced_nov_mdape": 10.506729874944964,
+ "reduced_nov_median_log_error": 0.006756690735578267,
+ "note": "Nov ads are listing cards only (no coordinates, kitchen, photos count, balcony/parking/dorm, full text); the reduced model is trained on October train rows with only the fields the cards carry, so the Oct-test vs Nov gap is the temporal (and card-vs-page) drift, not a feature gap.",
+ "mdape_gap_pp": 0.3498889646886205
+}

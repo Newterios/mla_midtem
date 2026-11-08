@@ -1,0 +1,21 @@
+id,price,pred_final,pred_base,log_error_final,seg_city,seg_price_band,seg_rooms,seg_photos,seg_text,seg_duplicate,seg_train_twin,abs_error_M,ape_pct
+1015790107,525000003.0,239948328.0651,245428604.8141,-0.783,Almaty,>=100M,4+,with photo embedding,description >=100 chars,unique ad,no train twin,285.0517,54.2956
+1016128179,197580000.0,338010749.5664,262568662.4981,0.5369,Almaty,>=100M,4+,with photo embedding,description >=100 chars,unique ad,no train twin,140.4307,71.0754
+1011662498,455000000.0,340900198.0402,337855864.7525,-0.2887,Almaty,>=100M,4+,no photos,description >=100 chars,unique ad,no train twin,114.0998,25.0769
+1011271841,230000000.0,143880536.2954,155730113.4733,-0.4691,Almaty,>=100M,4+,with photo embedding,description >=100 chars,unique ad,no train twin,86.1195,37.4432
+1013767426,249500000.0,183855391.3918,190777732.4017,-0.3053,Astana,>=100M,4+,with photo embedding,description >=100 chars,unique ad,no train twin,65.6446,26.3105
+1015161077,110000000.0,165792703.0992,170561994.9397,0.4103,Astana,>=100M,4+,with photo embedding,description >=100 chars,unique ad,no train twin,55.7927,50.7206
+1015437063,133000000.0,83924482.7958,74327437.2535,-0.4604,Astana,>=100M,3,with photo embedding,description >=100 chars,unique ad,no train twin,49.0755,36.8989
+699146557,180000000.0,132699374.6303,106706970.9275,-0.3049,Almaty,>=100M,2,with photo embedding,description >=100 chars,unique ad,no train twin,47.3006,26.2781
+1016149904,250000000.0,203682273.1157,228828729.0478,-0.2049,Almaty,>=100M,4+,with photo embedding,description >=100 chars,unique ad,no train twin,46.3177,18.5271
+1014407661,100000000.0,57286230.613,60275810.409,-0.5571,Astana,>=100M,3,no photos,description >=100 chars,unique ad,no train twin,42.7138,42.7138
+1015896847,195000000.0,153449587.3961,198988755.567,-0.2396,Almaty,>=100M,4+,with photo embedding,description >=100 chars,unique ad,no train twin,41.5504,21.3079
+696472189,135000000.0,97489413.1787,108611591.2679,-0.3255,Almaty,>=100M,3,with photo embedding,description >=100 chars,unique ad,no train twin,37.5106,27.7856
+761819504,149880000.0,112854230.895,102744038.3859,-0.2837,Almaty,>=100M,4+,with photo embedding,description >=100 chars,unique ad,no train twin,37.0258,24.7036
+1014188328,80000000.0,114773246.7482,90366821.8842,0.3609,Almaty,60-100M,4+,with photo embedding,description >=100 chars,unique ad,no train twin,34.7732,43.4666
+1014297933,130000000.0,97319179.423,119704820.5648,-0.2895,Astana,>=100M,4+,with photo embedding,description >=100 chars,unique ad,no train twin,32.6808,25.1391
+1003858174,125000000.0,157148512.0229,141905550.9321,0.2289,Almaty,>=100M,3,with photo embedding,description >=100 chars,unique ad,no train twin,32.1485,25.7188
+1013771665,85000000.0,115695625.5078,119882760.7013,0.3083,Almaty,60-100M,4+,with photo embedding,description >=100 chars,unique ad,no train twin,30.6956,36.1125
+1010462653,130000000.0,99886571.7801,111965599.1508,-0.2635,Astana,>=100M,4+,with photo embedding,description >=100 chars,unique ad,no train twin,30.1134,23.1642
+1014381429,115000000.0,85248238.1838,90824037.0332,-0.2994,Astana,>=100M,4+,with photo embedding,description >=100 chars,unique ad,no train twin,29.7518,25.8711
+1013423938,86000000.0,115508164.2952,118003131.1386,0.295,Almaty,60-100M,4+,with photo embedding,description >=100 chars,unique ad,no train twin,29.5082,34.3118

@@ -1,0 +1,80 @@
+{
+ "blocks": [
+  {
+   "block": "geo",
+   "kind": "tab",
+   "source": "features_geo.csv",
+   "n_cols": 18,
+   "n_ads": 4815,
+   "keep_decision": null,
+   "notes": "",
+   "digest": "1fbb634611aa2579"
+  },
+  {
+   "block": "rawfields",
+   "kind": "tab",
+   "source": "features_rawfields.csv",
+   "n_cols": 16,
+   "n_ads": 4815,
+   "keep_decision": null,
+   "notes": "",
+   "digest": "e068d88554ddf86c"
+  },
+  {
+   "block": "photo",
+   "kind": "tab",
+   "source": "features_photo.csv",
+   "n_cols": 50,
+   "n_ads": 4815,
+   "keep_decision": null,
+   "notes": "dropped 1 non-feature/train-only/constant columns: split",
+   "digest": "06efff6f96d08cb9"
+  },
+  {
+   "block": "text_flags",
+   "kind": "tab",
+   "source": "features_text.csv",
+   "n_cols": 12,
+   "n_ads": 4815,
+   "keep_decision": null,
+   "notes": "dropped 13 non-feature/train-only/constant columns: oof_delta_tf_idf_word_1_2_ridge_residual, oof_delta_tf_idf_char_3_5_ridge_residual, oof_delta_tf_idf_word_char_ridge_residual, oof_delta_tf_idf_word_char_ridge_residual_price_weighted, oof_delta_user_base_embedding_ridge_residual, oof_delta_rubert_tiny2_embedding_ridge_residual, oof_delta_tf_idf_word_char_user_base_embedding_one_ridge_residual, oof_delta_tf_idf_word_char_user_base_embedding_one_ridge_residual_price_weighted ...",
+   "digest": "9fe713350b78d0db"
+  },
+  {
+   "block": "text",
+   "kind": "text",
+   "source": "description (TF-IDF fitted per fold)",
+   "n_cols": 0,
+   "n_ads": null,
+   "keep_decision": null,
+   "notes": "",
+   "digest": "text:description"
+  },
+  {
+   "block": "text_emb",
+   "kind": "emb",
+   "source": "text_emb_user-base.npy",
+   "n_cols": 768,
+   "n_ads": 4815,
+   "keep_decision": null,
+   "notes": "",
+   "digest": "5d485aed13547201"
+  },
+  {
+   "block": "photo_emb",
+   "kind": "emb",
+   "source": "clip_emb.npz (CLIP ViT-B-32, mean per ad)",
+   "n_cols": 512,
+   "n_ads": 4574,
+   "keep_decision": null,
+   "notes": "",
+   "digest": "3f923468d601ccbc"
+  }
+ ],
+ "messages": [
+  "[ok]   group folds: 5 folds from folds_group.csv, 62 ads in duplicate groups"
+ ],
+ "primary_folds": "group",
+ "quick": false,
+ "n_train_rows": 3852
+}

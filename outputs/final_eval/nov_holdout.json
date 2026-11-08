@@ -1,0 +1,75 @@
+{
+ "n": 1507,
+ "chosen": {
+  "n": 1507,
+  "mae_M": 7.71947,
+  "mae_ci_low": 7.04667,
+  "mae_ci_high": 8.46071,
+  "mdape": 10.50673,
+  "mdape_ci_low": 9.75433,
+  "mdape_ci_high": 11.26413,
+  "r2": 0.77969,
+  "within10": 0.4864,
+  "median_log_error": 0.00676
+ },
+ "base": {
+  "n": 1507,
+  "mae_M": 12.16073,
+  "mae_ci_low": 11.37384,
+  "mae_ci_high": 13.11034,
+  "mdape": 18.67183,
+  "mdape_ci_low": 17.73485,
+  "mdape_ci_high": 19.78381,
+  "r2": 0.6394,
+  "within10": 0.29263,
+  "median_log_error": -0.01881
+ },
+ "chosen_on_oct_test": {
+  "n": 963,
+  "mae_M": 7.59565,
+  "mae_ci_low": 6.74896,
+  "mae_ci_high": 8.60822,
+  "mdape": 10.15684,
+  "mdape_ci_low": 9.30446,
+  "mdape_ci_high": 10.89884,
+  "r2": 0.78946,
+  "within10": 0.4974,
+  "median_log_error": -0.00177
+ },
+ "by_city": {
+  "Almaty": {
+   "n": 754,
+   "mae_M": 8.33556,
+   "mae_ci_low": 7.26705,
+   "mae_ci_high": 9.56482,
+   "mdape": 9.85798,
+   "mdape_ci_low": 8.95414,
+   "mdape_ci_high": 11.01514,
+   "r2": 0.78181,
+   "within10": 0.50531,
+   "median_log_error": 0.00211
+  },
+  "Astana": {
+   "n": 753,
+   "mae_M": 7.10257,
+   "mae_ci_low": 6.36133,
+   "mae_ci_high": 7.92045,
+   "mdape": 10.95626,
+   "mdape_ci_low": 9.95882,
+   "mdape_ci_high": 11.89931,
+   "r2": 0.75853,
+   "within10": 0.46746,
+   "median_log_error": 0.01006
+  }
+ },
+ "features_missing": [
+  "kitchen_area",
+  "n_photos",
+  "lat",
+  "lon",
+  "balcony",
+  "parking",
+  "former_dorm"
+ ],
+ "note": "'chosen' = the Endterm HGB retrained on the fields the November cards carry (the fused final model needs photos/text/coordinates the cards lack); 'base' = the full 24-feature Endterm model with the missing fields as NaN. Source: outputs/final/nov_holdout.*"
+}

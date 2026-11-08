@@ -1,0 +1,23 @@
+{
+ "primary_folds": "group",
+ "vetoed_blocks": [],
+ "A": {
+  "kept": [],
+  "greedy": [
+   "photo",
+   "text_emb",
+   "geo",
+   "text",
+   "text_flags",
+   "rawfields"
+  ]
+ },
+ "B": {
+  "kept": [],
+  "greedy": [
+   "geo",
+   "text_flags",
+   "rawfields"
+  ]
+ }
+}

@@ -1,0 +1,76 @@
+{
+ "primary_folds": "group",
+ "base_cv_mae_M": 6.723,
+ "base_cv_sd_M": 0.264,
+ "rule_margin_M": 0.3535,
+ "rule_threshold_M": 6.3695,
+ "whole_model_comparison": {
+  "variant": "C: network, all blocks, 50/50 log-blend with base",
+  "cv_mae_M": 6.1,
+  "cv_mae_sd_M": 0.3883,
+  "gain_vs_base_M": 0.623,
+  "margin_M": 0.3535,
+  "wins_by_more_than_1sd": true
+ },
+ "rule": "step",
+ "candidates": [
+  {
+   "strategy": "Cb",
+   "blocks": [
+    "geo",
+    "rawfields",
+    "photo",
+    "text_flags",
+    "text_emb",
+    "photo_emb"
+   ],
+   "cv_mae_M": 6.1,
+   "reason": "network blend with its blocks passes vs base; the tabular-only blend does not"
+  }
+ ],
+ "choice": {
+  "strategy": "Cb",
+  "blocks": [
+   "geo",
+   "rawfields",
+   "photo",
+   "text_flags",
+   "text_emb",
+   "photo_emb"
+  ],
+  "cv_mae_M": 6.1,
+  "reason": "network blend with its blocks passes vs base; the tabular-only blend does not"
+ },
+ "choice_other_folds": {
+  "random": {
+   "cv_mae_M": 6.0922,
+   "cv_mae_sd_M": 0.4676,
+   "delta_vs_base_M": -0.5238,
+   "passes_1sd_rule": true
+  }
+ },
+ "forward_selection": {
+  "A": {
+   "kept": [],
+   "greedy": [
+    "photo",
+    "text_emb",
+    "geo",
+    "text",
+    "text_flags",
+    "rawfields"
+   ]
+  },
+  "B": {
+   "kept": [],
+   "greedy": [
+    "geo",
+    "text_flags",
+    "rawfields"
+   ]
+  }
+ },
+ "best_greedy_strategy": "A",
+ "vetoed_blocks": [],
+ "note": "greedy = steps that lower CV MAE at all (waterfall); kept = steps that pass the team rule; among passing candidates the lowest primary-fold CV MAE wins"
+}

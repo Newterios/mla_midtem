@@ -1,0 +1,9 @@
+variant,cv_mae_M,cv_mae_sd_M,cv_mdape,cv_r2,folds_mae_M,delta_vs_base_M,folds_better,passes_1sd_rule,rule_threshold_M,folds,strategy,set,blocks
+A: base,6.723,0.264,8.918,0.8448,6.371 / 6.901 / 7.109 / 6.513 / 6.721,0.0,0,False,6.459,group,A,kept,
+A: base,6.616,0.3535,8.934,0.8569,6.277 / 6.860 / 7.142 / 6.200 / 6.601,0.0,0,False,6.2624,random,A,kept,
+A: text+geo+photo+text_emb+text_flags+rawfields,6.2852,0.3692,8.573,0.8667,5.854 / 6.754 / 6.668 / 5.932 / 6.218,-0.4379,5,True,6.459,group,A,greedy,text+geo+photo+text_emb+text_flags+rawfields
+A: text+geo+photo+text_emb+text_flags+rawfields,6.2027,0.461,8.55,0.8775,5.857 / 6.679 / 6.810 / 5.640 / 6.028,-0.4133,5,True,6.2624,random,A,greedy,text+geo+photo+text_emb+text_flags+rawfields
+B: base,6.723,0.264,8.918,0.8448,6.371 / 6.901 / 7.109 / 6.513 / 6.721,0.0,0,False,6.459,group,B,kept,
+B: base,6.616,0.3535,8.934,0.8569,6.277 / 6.860 / 7.142 / 6.200 / 6.601,0.0,0,False,6.2624,random,B,kept,
+B: geo+text_flags+photo+text,6.3933,0.3346,8.873,0.8712,5.984 / 6.277 / 6.935 / 6.591 / 6.179,-0.3297,4,True,6.459,group,B,greedy,geo+text_flags+photo+text
+B: geo+text_flags+photo+text,6.3793,0.4687,8.848,0.8745,5.741 / 6.548 / 7.155 / 6.308 / 6.144,-0.2367,3,False,6.2624,random,B,greedy,geo+text_flags+photo+text

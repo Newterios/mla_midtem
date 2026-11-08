@@ -1,0 +1,3 @@
+model,cv_mae_M,cv_mdape,test_mae_M,test_rmse_M,test_mdape,test_r2,test_within10,test_within20
+Endterm base,6.616,8.934,6.2909,13.895,9.1293,0.8549,0.5369,0.8432
+"C network + base, 50/50 log-blend (geo+rawfields+photo+text_flags+text_emb+photo_emb)",6.0922,,5.8013,14.003,7.8241,0.8526,0.5992,0.8837

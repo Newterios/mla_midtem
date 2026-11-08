@@ -1,0 +1,19 @@
+{
+ "chosen": "C network + base, 50/50 log-blend (geo+rawfields+photo+text_flags+text_emb+photo_emb)",
+ "strategy": "Cb",
+ "blocks": [
+  "geo",
+  "rawfields",
+  "photo",
+  "text_flags",
+  "text_emb",
+  "photo_emb"
+ ],
+ "cv_mae_M": 6.0922,
+ "cv_mae_sd_M": 0.4676,
+ "group_cv_mae_M": 6.1,
+ "group_cv_sd_M": 0.3883,
+ "reason": "network blend with its blocks passes vs base; the tabular-only blend does not",
+ "primary_folds": "group",
+ "note": "cv_mae_M = Endterm random folds (comparable with base.cv_mae_M); the choice was made on the group folds; source outputs/final/selection.json"
+}
