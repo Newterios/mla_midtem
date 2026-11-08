@@ -1,0 +1,89 @@
+{
+  "built_utc": "2026-11-08T10:37:01+00:00",
+  "raw_dir": "/Users/rakhatbalgabekov/Downloads/mla/mla_final/data/raw_2026-11",
+  "october_check": {
+    "rows": 4815,
+    "same_ids_and_order": true,
+    "differing_columns": []
+  },
+  "level": "listing (search cards only; ad pages blocked by SafeLine on 2026-11-08, scraper stopped)",
+  "fields_missing_vs_october": [
+    "lat",
+    "lon",
+    "street",
+    "house_num",
+    "kitchen_area",
+    "n_photos",
+    "balcony",
+    "parking",
+    "former_dorm",
+    "exchange",
+    "full description",
+    "photos"
+  ],
+  "listings": 1748,
+  "detail_lines": 0,
+  "detail_ok": 0,
+  "card_only": 1523,
+  "unmapped_card_districts": 58,
+  "district_map_size": 13,
+  "cleaning_steps": [
+    {
+      "step": "1 numeric fixed price",
+      "rows_before": 1523,
+      "rows_after": 1523,
+      "removed": 0
+    },
+    {
+      "step": "2 unique listing id",
+      "rows_before": 1523,
+      "rows_after": 1523,
+      "removed": 0
+    },
+    {
+      "step": "3 remove near-duplicate reposts",
+      "rows_before": 1523,
+      "rows_after": 1523,
+      "removed": 0
+    },
+    {
+      "step": "4 plausible ranges",
+      "rows_before": 1523,
+      "rows_after": 1521,
+      "removed": 2
+    },
+    {
+      "step": "5 kitchen/ceiling set to NaN (0/87 values)",
+      "rows_before": 1521,
+      "rows_after": 1521,
+      "removed": 0
+    }
+  ],
+  "dropped_october_ids": 0,
+  "october_reposts_new_id": 14,
+  "october_reposts_by_rule": {
+    "ad_page_address": 0,
+    "search_card_address": 14
+  },
+  "reposts_dropped": true,
+  "scrub": {
+    "descriptions_changed": 0,
+    "masked": {}
+  },
+  "posted_after_october": 665,
+  "rows_after_cleaning": 1521,
+  "rows_out": 1507,
+  "out_csv": "/Users/rakhatbalgabekov/Downloads/mla/mla_final/data/clean/krisha_nov_holdout.csv",
+  "by_city": {
+    "Almaty": 754,
+    "Astana": 753
+  },
+  "has_detail": {
+    "false": 1507
+  },
+  "scraped_at_range": [
+    "2026-11-08 10:29:15+00:00",
+    "2026-11-08 10:32:42+00:00"
+  ],
+  "price_median_M": 41.0
+}
