@@ -1,0 +1,71 @@
+variant,group,n,mae_M,mdape,mae_delta_M,mdape_delta
+Endterm base,all,3852,6.6159,8.8516,0.0,0.0
+Endterm base,condition stated,2359,6.2129,8.6505,0.0,0.0
+Endterm base,condition unknown,1493,7.2528,9.3034,0.0,0.0
+Endterm base,unknown + has photos,1407,7.1407,9.3849,0.0,0.0
+Endterm base,no photos,196,7.3947,8.7237,0.0,0.0
+photo condition probabilities (nested OOF probe),all,3852,6.6168,8.4667,0.0008,-0.385
+photo condition probabilities (nested OOF probe),condition stated,2359,6.3493,8.3663,0.1364,-0.2842
+photo condition probabilities (nested OOF probe),condition unknown,1493,7.0394,8.5883,-0.2134,-0.7152
+photo condition probabilities (nested OOF probe),unknown + has photos,1407,6.9019,8.529,-0.2388,-0.8559
+photo condition probabilities (nested OOF probe),no photos,196,8.0074,9.061,0.6127,0.3373
+condition probs + stated condition filled from photos,all,3852,6.6554,8.6365,0.0394,-0.2151
+condition probs + stated condition filled from photos,condition stated,2359,6.3902,8.6562,0.1773,0.0057
+condition probs + stated condition filled from photos,condition unknown,1493,7.0744,8.598,-0.1784,-0.7054
+condition probs + stated condition filled from photos,unknown + has photos,1407,6.9264,8.5544,-0.2143,-0.8305
+condition probs + stated condition filled from photos,no photos,196,8.1069,9.0611,0.7122,0.3374
+condition probs only where condition is not stated,all,3852,6.5004,8.6178,-0.1156,-0.2338
+condition probs only where condition is not stated,condition stated,2359,6.2322,8.467,0.0193,-0.1835
+condition probs only where condition is not stated,condition unknown,1493,6.9241,8.9852,-0.3287,-0.3182
+condition probs only where condition is not stated,unknown + has photos,1407,6.7786,8.9245,-0.3621,-0.4604
+condition probs only where condition is not stated,no photos,196,7.5001,9.572,0.1053,0.8483
+CLIP zero-shot quality + room shares,all,3852,6.8236,8.9227,0.2077,0.0711
+CLIP zero-shot quality + room shares,condition stated,2359,6.5177,8.79,0.3048,0.1395
+CLIP zero-shot quality + room shares,condition unknown,1493,7.307,9.1269,0.0542,-0.1766
+CLIP zero-shot quality + room shares,unknown + has photos,1407,7.1392,9.013,-0.0015,-0.372
+CLIP zero-shot quality + room shares,no photos,196,8.2596,9.8139,0.8648,1.0902
+CLIP zero-shot room shares only,all,3852,6.8729,9.2399,0.257,0.3883
+CLIP zero-shot room shares only,condition stated,2359,6.5545,9.0853,0.3416,0.4348
+CLIP zero-shot room shares only,condition unknown,1493,7.3761,9.5901,0.1233,0.2866
+CLIP zero-shot room shares only,unknown + has photos,1407,7.2523,9.5969,0.1116,0.2119
+CLIP zero-shot room shares only,no photos,196,7.9978,9.4621,0.6031,0.7384
+CLIP embedding PCA(16),all,3852,6.7073,8.8949,0.0914,0.0433
+CLIP embedding PCA(16),condition stated,2359,6.4232,8.5825,0.2103,-0.068
+CLIP embedding PCA(16),condition unknown,1493,7.1562,9.4397,-0.0965,0.1363
+CLIP embedding PCA(16),unknown + has photos,1407,7.0028,9.3557,-0.1379,-0.0292
+CLIP embedding PCA(16),no photos,196,8.3643,10.333,0.9696,1.6093
+legacy MobileNetV3 embedding PCA(16),all,3852,7.0561,9.446,0.4402,0.5943
+legacy MobileNetV3 embedding PCA(16),condition stated,2359,6.8043,9.2708,0.5914,0.6204
+legacy MobileNetV3 embedding PCA(16),condition unknown,1493,7.4541,9.7185,0.2013,0.4151
+legacy MobileNetV3 embedding PCA(16),unknown + has photos,1407,7.3821,9.7185,0.2414,0.3336
+legacy MobileNetV3 embedding PCA(16),no photos,196,7.5214,9.2581,0.1266,0.5344
+condition probs + zero-shot,all,3852,6.7788,8.9546,0.1628,0.103
+condition probs + zero-shot,condition stated,2359,6.6387,8.7942,0.4259,0.1437
+condition probs + zero-shot,condition unknown,1493,7.0001,9.1186,-0.2527,-0.1848
+condition probs + zero-shot,unknown + has photos,1407,6.8296,9.0413,-0.3111,-0.3436
+condition probs + zero-shot,no photos,196,8.2162,9.2438,0.8214,0.5201
+condition probs + zero-shot + CLIP PCA(16),all,3852,6.8846,9.1538,0.2686,0.3021
+condition probs + zero-shot + CLIP PCA(16),condition stated,2359,6.7239,9.0659,0.511,0.4154
+condition probs + zero-shot + CLIP PCA(16),condition unknown,1493,7.1385,9.2781,-0.1143,-0.0253
+condition probs + zero-shot + CLIP PCA(16),unknown + has photos,1407,6.9561,9.1655,-0.1846,-0.2195
+condition probs + zero-shot + CLIP PCA(16),no photos,196,8.4514,9.3831,1.0567,0.6594
+residual: RidgeCV on CLIP ad embedding,all,3852,6.4367,8.8768,-0.1792,0.0251
+residual: RidgeCV on CLIP ad embedding,condition stated,2359,6.1692,8.7312,-0.0437,0.0807
+residual: RidgeCV on CLIP ad embedding,condition unknown,1493,6.8595,9.0208,-0.3933,-0.2827
+residual: RidgeCV on CLIP ad embedding,unknown + has photos,1407,6.7233,9.0208,-0.4174,-0.3642
+residual: RidgeCV on CLIP ad embedding,no photos,196,7.3947,8.7237,0.0,0.0
+residual: RidgeCV on CLIP interior-weighted embedding,all,3852,6.4415,8.7862,-0.1745,-0.0654
+residual: RidgeCV on CLIP interior-weighted embedding,condition stated,2359,6.1734,8.6431,-0.0395,-0.0074
+residual: RidgeCV on CLIP interior-weighted embedding,condition unknown,1493,6.865,9.002,-0.3878,-0.3015
+residual: RidgeCV on CLIP interior-weighted embedding,unknown + has photos,1407,6.7291,9.002,-0.4116,-0.383
+residual: RidgeCV on CLIP interior-weighted embedding,no photos,196,7.3947,8.7237,0.0,0.0
+residual: RidgeCV on legacy MobileNetV3 embedding,all,3852,6.5174,8.8754,-0.0986,0.0238
+residual: RidgeCV on legacy MobileNetV3 embedding,condition stated,2359,6.2168,8.7775,0.004,0.127
+residual: RidgeCV on legacy MobileNetV3 embedding,condition unknown,1493,6.9922,9.0657,-0.2606,-0.2377
+residual: RidgeCV on legacy MobileNetV3 embedding,unknown + has photos,1407,6.8681,9.1027,-0.2726,-0.2823
+residual: RidgeCV on legacy MobileNetV3 embedding,no photos,196,7.3309,8.2788,-0.0638,-0.4449
+residual: HGB on condition probs + zero-shot,all,3852,6.4258,8.6667,-0.1901,-0.1849
+residual: HGB on condition probs + zero-shot,condition stated,2359,6.1377,8.6458,-0.0752,-0.0047
+residual: HGB on condition probs + zero-shot,condition unknown,1493,6.8811,8.6831,-0.3717,-0.6203
+residual: HGB on condition probs + zero-shot,unknown + has photos,1407,6.7367,8.6831,-0.404,-0.7018
+residual: HGB on condition probs + zero-shot,no photos,196,7.5664,9.0468,0.1716,0.3231

@@ -1,0 +1,119 @@
+[
+ {
+  "variant": "residual: Ridge on TF-IDF text only (alpha 10)",
+  "cv_mae_M": 6.4306,
+  "cv_mae_sd_M": 0.3785,
+  "cv_mdape": 8.657,
+  "cv_r2": 0.8642,
+  "folds_mae_M": [
+   6.057,
+   6.761,
+   6.928,
+   5.962,
+   6.446
+  ],
+  "delta_vs_base_M": -0.1854,
+  "folds_better": 5,
+  "passes_1sd_rule": false,
+  "chosen_alpha_weight": [
+   [
+    10.0,
+    0.0
+   ],
+   [
+    10.0,
+    0.0
+   ],
+   [
+    10.0,
+    0.0
+   ],
+   [
+    10.0,
+    0.0
+   ],
+   [
+    10.0,
+    0.0
+   ]
+  ]
+ },
+ {
+  "variant": "residual: Ridge on TF-IDF + CLIP embedding (alpha 10, weight 1)",
+  "cv_mae_M": 6.3619,
+  "cv_mae_sd_M": 0.3839,
+  "cv_mdape": 8.579,
+  "cv_r2": 0.8699,
+  "folds_mae_M": [
+   5.975,
+   6.732,
+   6.866,
+   5.921,
+   6.317
+  ],
+  "delta_vs_base_M": -0.254,
+  "folds_better": 5,
+  "passes_1sd_rule": false,
+  "chosen_alpha_weight": [
+   [
+    10.0,
+    1.0
+   ],
+   [
+    10.0,
+    1.0
+   ],
+   [
+    10.0,
+    1.0
+   ],
+   [
+    10.0,
+    1.0
+   ],
+   [
+    10.0,
+    1.0
+   ]
+  ]
+ },
+ {
+  "variant": "residual: Ridge on TF-IDF + CLIP, alpha/weight by inner CV",
+  "cv_mae_M": 6.3619,
+  "cv_mae_sd_M": 0.3839,
+  "cv_mdape": 8.579,
+  "cv_r2": 0.8699,
+  "folds_mae_M": [
+   5.975,
+   6.732,
+   6.866,
+   5.921,
+   6.317
+  ],
+  "delta_vs_base_M": -0.254,
+  "folds_better": 5,
+  "passes_1sd_rule": false,
+  "chosen_alpha_weight": [
+   [
+    10.0,
+    1.0
+   ],
+   [
+    10.0,
+    1.0
+   ],
+   [
+    10.0,
+    1.0
+   ],
+   [
+    10.0,
+    1.0
+   ],
+   [
+    10.0,
+    1.0
+   ]
+  ]
+ }
+]

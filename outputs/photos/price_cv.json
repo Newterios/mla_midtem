@@ -1,0 +1,259 @@
+{
+ "probe": {
+  "model": "(c) CLIP linear probe [interior-weighted]",
+  "encoder": "clip",
+  "pool": "interior",
+  "C": 0.003
+ },
+ "base": {
+  "variant": "Endterm base (tuned HGB, 24 features)",
+  "cv_mae_M": 6.616,
+  "cv_mae_sd_M": 0.3535,
+  "cv_mdape": 8.934,
+  "cv_r2": 0.8569,
+  "folds_mae_M": [
+   6.277,
+   6.86,
+   7.142,
+   6.2,
+   6.601
+  ]
+ },
+ "rows": [
+  {
+   "variant": "Endterm base (tuned HGB, 24 features)",
+   "cv_mae_M": 6.616,
+   "cv_mae_sd_M": 0.3535,
+   "cv_mdape": 8.934,
+   "cv_r2": 0.8569,
+   "folds_mae_M": [
+    6.277,
+    6.86,
+    7.142,
+    6.2,
+    6.601
+   ]
+  },
+  {
+   "variant": "photo condition probabilities (nested OOF probe)",
+   "cv_mae_M": 6.6168,
+   "cv_mae_sd_M": 0.2984,
+   "cv_mdape": 8.425,
+   "cv_r2": 0.8491,
+   "folds_mae_M": [
+    6.381,
+    6.748,
+    7.128,
+    6.295,
+    6.533
+   ],
+   "delta_vs_base_M": 0.0008,
+   "folds_better": 3,
+   "passes_1sd_rule": false
+  },
+  {
+   "variant": "condition probs + stated condition filled from photos",
+   "cv_mae_M": 6.6554,
+   "cv_mae_sd_M": 0.3363,
+   "cv_mdape": 8.692,
+   "cv_r2": 0.8481,
+   "folds_mae_M": [
+    6.346,
+    6.915,
+    7.166,
+    6.291,
+    6.559
+   ],
+   "delta_vs_base_M": 0.0394,
+   "folds_better": 1,
+   "passes_1sd_rule": false
+  },
+  {
+   "variant": "condition probs only where condition is not stated",
+   "cv_mae_M": 6.5004,
+   "cv_mae_sd_M": 0.2209,
+   "cv_mdape": 8.654,
+   "cv_r2": 0.8595,
+   "folds_mae_M": [
+    6.233,
+    6.56,
+    6.843,
+    6.287,
+    6.578
+   ],
+   "delta_vs_base_M": -0.1155,
+   "folds_better": 4,
+   "passes_1sd_rule": false
+  },
+  {
+   "variant": "CLIP zero-shot quality + room shares",
+   "cv_mae_M": 6.8237,
+   "cv_mae_sd_M": 0.4126,
+   "cv_mdape": 8.912,
+   "cv_r2": 0.8445,
+   "folds_mae_M": [
+    6.358,
+    6.926,
+    7.561,
+    6.711,
+    6.562
+   ],
+   "delta_vs_base_M": 0.2077,
+   "folds_better": 1,
+   "passes_1sd_rule": false
+  },
+  {
+   "variant": "CLIP zero-shot room shares only",
+   "cv_mae_M": 6.8731,
+   "cv_mae_sd_M": 0.2738,
+   "cv_mdape": 9.239,
+   "cv_r2": 0.8406,
+   "folds_mae_M": [
+    6.516,
+    6.785,
+    7.344,
+    6.955,
+    6.766
+   ],
+   "delta_vs_base_M": 0.2571,
+   "folds_better": 1,
+   "passes_1sd_rule": false
+  },
+  {
+   "variant": "CLIP embedding PCA(16)",
+   "cv_mae_M": 6.7074,
+   "cv_mae_sd_M": 0.4077,
+   "cv_mdape": 8.826,
+   "cv_r2": 0.849,
+   "folds_mae_M": [
+    6.227,
+    6.947,
+    7.376,
+    6.54,
+    6.447
+   ],
+   "delta_vs_base_M": 0.0914,
+   "folds_better": 2,
+   "passes_1sd_rule": false
+  },
+  {
+   "variant": "legacy MobileNetV3 embedding PCA(16)",
+   "cv_mae_M": 7.0562,
+   "cv_mae_sd_M": 0.3401,
+   "cv_mdape": 9.43,
+   "cv_r2": 0.8439,
+   "folds_mae_M": [
+    6.628,
+    7.052,
+    7.666,
+    6.908,
+    7.027
+   ],
+   "delta_vs_base_M": 0.4403,
+   "folds_better": 0,
+   "passes_1sd_rule": false
+  },
+  {
+   "variant": "condition probs + zero-shot",
+   "cv_mae_M": 6.7789,
+   "cv_mae_sd_M": 0.4151,
+   "cv_mdape": 8.916,
+   "cv_r2": 0.8472,
+   "folds_mae_M": [
+    6.214,
+    7.04,
+    7.359,
+    6.864,
+    6.418
+   ],
+   "delta_vs_base_M": 0.1629,
+   "folds_better": 2,
+   "passes_1sd_rule": false
+  },
+  {
+   "variant": "condition probs + zero-shot + CLIP PCA(16)",
+   "cv_mae_M": 6.8847,
+   "cv_mae_sd_M": 0.4556,
+   "cv_mdape": 9.204,
+   "cv_r2": 0.8446,
+   "folds_mae_M": [
+    6.345,
+    7.08,
+    7.667,
+    6.666,
+    6.665
+   ],
+   "delta_vs_base_M": 0.2687,
+   "folds_better": 0,
+   "passes_1sd_rule": false
+  },
+  {
+   "variant": "residual: RidgeCV on CLIP ad embedding",
+   "cv_mae_M": 6.4367,
+   "cv_mae_sd_M": 0.3846,
+   "cv_mdape": 8.832,
+   "cv_r2": 0.8687,
+   "folds_mae_M": [
+    6.054,
+    6.78,
+    6.99,
+    6.044,
+    6.316
+   ],
+   "delta_vs_base_M": -0.1792,
+   "folds_better": 5,
+   "passes_1sd_rule": false
+  },
+  {
+   "variant": "residual: RidgeCV on CLIP interior-weighted embedding",
+   "cv_mae_M": 6.4415,
+   "cv_mae_sd_M": 0.3911,
+   "cv_mdape": 8.769,
+   "cv_r2": 0.8685,
+   "folds_mae_M": [
+    6.018,
+    6.813,
+    6.988,
+    6.08,
+    6.307
+   ],
+   "delta_vs_base_M": -0.1745,
+   "folds_better": 5,
+   "passes_1sd_rule": false
+  },
+  {
+   "variant": "residual: RidgeCV on legacy MobileNetV3 embedding",
+   "cv_mae_M": 6.5174,
+   "cv_mae_sd_M": 0.3893,
+   "cv_mdape": 8.854,
+   "cv_r2": 0.8627,
+   "folds_mae_M": [
+    6.128,
+    6.796,
+    7.125,
+    6.135,
+    6.402
+   ],
+   "delta_vs_base_M": -0.0986,
+   "folds_better": 5,
+   "passes_1sd_rule": false
+  },
+  {
+   "variant": "residual: HGB on condition probs + zero-shot",
+   "cv_mae_M": 6.4258,
+   "cv_mae_sd_M": 0.4395,
+   "cv_mdape": 8.659,
+   "cv_r2": 0.8678,
+   "folds_mae_M": [
+    6.098,
+    6.862,
+    7.052,
+    6.001,
+    6.117
+   ],
+   "delta_vs_base_M": -0.1902,
+   "folds_better": 4,
+   "passes_1sd_rule": false
+  }
+ ]
+}

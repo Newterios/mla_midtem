@@ -1,0 +1,8 @@
+model,C,macro_f1_cv,macro_f1_sd,accuracy_cv,balanced_acc,log_loss,macro_f1_fold0,accuracy_fold0,f1_fresh,f1_good,f1_needs_repair,f1_shell
+(a) frozen mnv3 + LR,0.003,0.5918,0.0275,0.6785,0.6218,0.7562,0.5517,0.6556,0.7197,0.5898,0.1938,0.8713
+(a) frozen effnet_b0 + LR,0.003,0.6078,0.0293,0.6972,0.6252,0.7077,0.5879,0.6889,0.7321,0.5905,0.2258,0.8897
+(c) CLIP linear probe,0.01,0.6323,0.0161,0.7212,0.6569,0.6832,0.6424,0.7267,0.7617,0.6396,0.2535,0.8771
+(c) CLIP linear probe [interior-weighted],0.003,0.6382,0.0164,0.7234,0.6673,0.6766,0.6224,0.7089,0.7689,0.6409,0.2616,0.8822
+(a) frozen effnet_b0 + LR [interior-weighted],0.003,0.6126,0.0319,0.6994,0.6229,0.7122,0.5845,0.6778,0.7339,0.5986,0.236,0.8841
+(b) fine-tuned EfficientNet-B0,,,,,0.5858,0.9897,0.5456,0.6156,0.6791,0.536,0.1053,0.8619
+"(b) fine-tuned EfficientNet-B0 (lr 0.0002, interior photos only)",,,,,0.5984,0.948,0.5771,0.68,0.7235,0.6276,0.1154,0.8421

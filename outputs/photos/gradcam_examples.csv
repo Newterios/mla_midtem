@@ -1,0 +1,17 @@
+id,stated,predicted,ad_p,photo_k,photo_p,figure
+1015716496,fresh,fresh,0.741,1,0.8,gradcam_correct.png
+1014632950,fresh,fresh,0.706,1,0.723,gradcam_correct.png
+1001546836,good,good,0.748,4,0.888,gradcam_correct.png
+685515312,good,good,0.712,4,0.828,gradcam_correct.png
+1002135025,needs_repair,needs_repair,0.593,1,0.907,gradcam_correct.png
+1011256272,needs_repair,needs_repair,0.567,2,0.868,gradcam_correct.png
+1016208302,shell,shell,0.918,5,0.918,gradcam_correct.png
+1001966280,shell,shell,0.915,5,0.951,gradcam_correct.png
+1016115416,good,fresh,0.611,3,0.742,gradcam_incorrect.png
+1016178117,good,fresh,0.6,5,0.695,gradcam_incorrect.png
+678690361,fresh,good,0.664,4,0.824,gradcam_incorrect.png
+691313543,fresh,good,0.633,3,0.734,gradcam_incorrect.png
+1012437151,good,needs_repair,0.539,2,0.779,gradcam_incorrect.png
+1016126836,good,needs_repair,0.496,2,0.874,gradcam_incorrect.png
+1013992254,needs_repair,shell,0.916,5,0.93,gradcam_incorrect.png
+1014629896,needs_repair,shell,0.909,5,0.93,gradcam_incorrect.png

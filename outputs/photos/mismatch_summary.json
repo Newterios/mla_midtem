@@ -1,0 +1,136 @@
+{
+ "probe": {
+  "model": "(c) CLIP linear probe [interior-weighted]",
+  "encoder": "clip",
+  "pool": "interior",
+  "C": 0.003
+ },
+ "oof_train_metrics": {
+  "macro_f1": 0.6428846955605363,
+  "accuracy": 0.7207647843485994,
+  "balanced_acc": 0.6741693138262798,
+  "log_loss": 0.6765393509801351,
+  "per_class_f1": {
+   "fresh": 0.7613861386138614,
+   "good": 0.6306818181818182,
+   "needs_repair": 0.28448275862068967,
+   "shell": 0.8949880668257757
+  },
+  "confusion": [
+   [
+    769,
+    280,
+    26,
+    31
+   ],
+   [
+    138,
+    444,
+    69,
+    4
+   ],
+   [
+    2,
+    25,
+    33,
+    23
+   ],
+   [
+    5,
+    4,
+    21,
+    375
+   ]
+  ]
+ },
+ "thresholds": {
+  "poor_vs_stated_good": 0.7,
+  "good_vs_stated_poor": 0.8
+ },
+ "labelled_ads_with_photos": {
+  "train": 2249,
+  "test": 570
+ },
+ "counts": {
+  "train": {
+   "none": 3770,
+   "photos_poor_vs_stated_good": 62,
+   "photos_good_vs_stated_poor": 20
+  },
+  "test": {
+   "none": 949,
+   "photos_poor_vs_stated_good": 9,
+   "photos_good_vs_stated_poor": 5
+  }
+ },
+ "by_stated_class_train": [
+  {
+   "mismatch": "photos_good_vs_stated_poor",
+   "stated_class": "needs_repair",
+   "n": 12
+  },
+  {
+   "mismatch": "photos_good_vs_stated_poor",
+   "stated_class": "shell",
+   "n": 8
+  },
+  {
+   "mismatch": "photos_poor_vs_stated_good",
+   "stated_class": "fresh",
+   "n": 34
+  },
+  {
+   "mismatch": "photos_poor_vs_stated_good",
+   "stated_class": "good",
+   "n": 28
+  }
+ ],
+ "reliable_counts_train": {
+  "photos_poor_vs_stated_good": 47,
+  "photos_good_vs_stated_poor": 19
+ },
+ "top_ids": {
+  "photos_good_vs_stated_poor": [
+   1014035697,
+   1009548022,
+   1007318316,
+   1010246907,
+   1009354394,
+   1014750356,
+   1015438916,
+   1007459085,
+   1015182536,
+   1013095306
+  ],
+  "photos_poor_vs_stated_good": [
+   1016261646,
+   1013110518,
+   1010899323,
+   1015620941,
+   1014414777,
+   1015556467,
+   1013085131,
+   1005749091,
+   1016261962,
+   1010562035
+  ]
+ },
+ "base_residual_check_train": {
+  "photos_poor_vs_stated_good": {
+   "n": 62,
+   "mean_log_resid": -0.007427413086483918,
+   "median_log_resid": -0.0004502287477113,
+   "control_n": 1786,
+   "control_mean_log_resid": 0.0010802701440854085,
+   "mannwhitney_p": 0.7912168906926684
+  },
+  "photos_good_vs_stated_poor": {
+   "n": 20,
+   "mean_log_resid": 0.07315839272024398,
+   "median_log_resid": 0.08442974281815016,
+   "control_n": 491,
+   "control_mean_log_resid": -0.011862442854306684,
+   "mannwhitney_p": 0.12982995223747332
+  }
+ }
+}
