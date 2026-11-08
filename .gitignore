@@ -2,30 +2,21 @@
 .DS_Store
 __pycache__/
 .ipynb_checkpoints/
-data/clean/clean_backup.csv
-build_data_card.py
-slides_build/
-slides/talk_script.md
-slides/talk_script.pdf
-tools/
-notebooks_src/
-DEFENSE_QA.md
+.pytest_cache/
 *.html
+*_preliminary.csv
 
-# Final: caches, logs and downloaded photos are never committed
+# caches, logs and downloaded photos are never committed (see the data card)
 cache/
 logs/
 data/photos/
-.pytest_cache/
 outputs/leakage/local/
 
-# Photo track figures that show krisha.kz photos (local only, never committed: data card promise)
+# photo track figures that show krisha.kz photos stay local (data card promise)
 outputs/photos/gradcam_*.png
 outputs/photos/examples_*.png
 
-# Final: build helpers and working notes stay local (the submission holds the built notebook, report and slides)
-CONTRACT.md
-scripts/build_final_*.py
-scripts/final_slides_content.json
-tests/test_final_builders.py
-*_preliminary.csv
+# local working files
+tools/
+notebooks_src/
+slides_build/

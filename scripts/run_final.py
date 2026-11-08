@@ -616,7 +616,7 @@ def _metric_block(b: dict) -> dict:
 
 def stage_export(run: Run):
     """Copy the integration results into the layout the notebook, the report and the slides read
-    (scripts/final_build_common.py): outputs/fusion/ (CV choice) and outputs/final_eval/ (test + November).
+    outputs/fusion/ (CV choice) and outputs/final_eval/ (test + November).
     Pure re-formatting of files already written; whatever does not exist yet is skipped."""
     import shutil
     # quick mode keeps everything inside its own output directory
