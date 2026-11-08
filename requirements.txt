@@ -1,3 +1,4 @@
+# Midterm / Endterm
 beautifulsoup4
 ipykernel
 joblib
@@ -16,3 +17,17 @@ seaborn
 tabulate
 torch
 xgboost
+# Final: photos (CLIP, EfficientNet, perceptual hashes), text (sentence encoders), trust layer, app, tests
+torchvision
+open-clip-torch
+timm
+sentence-transformers
+transformers
+pillow
+imagehash
+scipy
+shap
+gradio
+pytest
+# optional: only one test compares our conformal intervals with MAPIE
+# mapie

@@ -276,7 +276,7 @@ def test_run_final_quick_end_to_end(tmp_path):
         assert (tmp_path / f).exists(), f
     tm = json.loads((tmp_path / "test_metrics.json").read_text())
     assert tm["quick"] is True and tm["metrics"]["n_boot"] == 200
-    # export: the layout the deliverable builders read (scripts/final_build_common.py)
+    # export: the layout the notebook, the report and the slides read (scripts/final_build_common.py)
     for f in ("fusion/selection.csv", "fusion/selection.json", "final_eval/test_metrics.json", "final_eval/results_table.csv",
               "final_eval/nov_holdout.json", "final_eval/error_by_segment.csv", "final_eval/worst_cases.csv"):
         assert (tmp_path / f).exists(), f

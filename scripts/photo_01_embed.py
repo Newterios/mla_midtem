@@ -1,7 +1,7 @@
 """Photo track step 1: image cache, frozen embeddings (CLIP, EfficientNet-B0, MobileNetV3-small)
 and CLIP zero-shot room/quality scores.
 
-Run from the repo root:  ~/Downloads/mla/mla_midtem/.venv/bin/python scripts/photo_01_embed.py
+Run from the repo root:  .venv/bin/python scripts/photo_01_embed.py
 Outputs: cache/photo_u8_224.npy + cache/photo_index.csv, cache/{clip,effnet_b0,mnv3}_emb.npz,
          outputs/photos/clip_zero_shot_photo.csv (per photo), outputs/photos/clip_zero_shot_ad.csv (per ad).
 """

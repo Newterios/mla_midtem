@@ -1,6 +1,6 @@
 """Track "geo": OpenStreetMap location features + unused raw ad fields, judged by the 1-SD rule.
 
-Run from the repo root:  ~/Downloads/mla/mla_midtem/.venv/bin/python scripts/run_geo.py [--plots-only | --importance-only]
+Run from the repo root:  .venv/bin/python scripts/run_geo.py [--plots-only | --importance-only]
 (on a busy machine run --importance-only with OMP_NUM_THREADS=1: 5 single-threaded fold workers)
 Training rows only (core.load_train); the 963 test ads are never touched.
 

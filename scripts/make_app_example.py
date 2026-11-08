@@ -1,6 +1,6 @@
 """Render one app prediction as a static card for the slides: outputs/final/app_example.png.
 
-    ~/Downloads/mla/mla_midtem/.venv/bin/python scripts/make_app_example.py
+    .venv/bin/python scripts/make_app_example.py
 
 Runs app.predict.Predictor (final model + trust layer + text flags + photo condition) on one
 hand-made listing (not a test ad) with two training-ad photos, and draws the result with matplotlib.

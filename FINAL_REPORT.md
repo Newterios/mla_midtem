@@ -5,6 +5,8 @@ Full text, code and figures: `Final_SE-2424_Balgabekov_Kaiyrbekuly.ipynb`; slide
 **Base (Endterm, reproduced):** CV MAE **6.616 ± 0.353 M**, MdAPE 8.93 %; test MAE 6.29 M, MdAPE 9.13 %, R² 0.855.
 **Final model:** C network + base, 50/50 log-blend (geo+rawfields+photo+text_flags+text_emb+photo_emb): CV MAE **6.100 ± 0.388 M** on the repaired folds (6.092 ± 0.468 on the random folds); test MAE **5.80 M** (95 % bootstrap 5.09–6.67; paired difference to the Endterm -0.80 to -0.16 M), MdAPE **7.82 %**, R² 0.853. November hold-out (1,507 ads, listing level, reduced model on the card fields): MdAPE 10.16 % on the October test → 10.51 % in November.
 
+**Sources, rights and matching.** Every new input attaches to the same 4,815 ads by the ad id of the October scrape; the saved train/test split is unchanged. *Text:* the description field of the public ad pages read on 4–8 October (robots.txt allows the ad pages, no login; data card), masked for contacts at the Endterm and stripped of money sentences, digits and contacts before any model sees it (4,735 ads with a description, 4,593 with 100+ characters). *Photos:* up to five image links per ad from the same pages, downloaded once into a local cache for feature extraction only, not committed, redistributed or shown (Grad-CAM figures with krisha.kz photos stay local); 4,574 ads (95 %) have a usable photo, the rest are "no photo", as in training. *Location:* OpenStreetMap amenities around the 4,802 ads with coordinates, via the Overpass API, fetched once and cached (© OpenStreetMap contributors, ODbL). *November hold-out:* 1,507 search-page cards scraped on 8 November from the public listing pages (ad pages were blocked by the site's bot protection), a separate sample never joined to the training rows. An ad with a missing source keeps its structured fields and gets missing indicators; no ad is dropped.
+
 ## Status of the track outputs
 
 | track                       | outputs present   | missing   |
@@ -349,15 +351,34 @@ Chosen: **abs-residual (base HGB) | Mondrian estimate band** (valid per-city cov
 | train_twin | has a twin in train     |  13 |  2.00202 |      1.10466 |       3.08183 |  3.77605 |           -0.00444 |    0.76923 |      2.85198 |      4.82483 |     -0.84996 |      -2.21117 |        0.28413 |
 | train_twin | no train twin           | 950 |  5.85327 |      5.11881 |       6.76301 |  7.89789 |            0.00547 |    0.59684 |      6.33796 |      9.16235 |     -0.48469 |      -0.8102  |       -0.14979 |
 
+## 8.1 The Endterm hypothesis, tested on the ads the Endterm named
+
+| ads | n | median APE, Endterm base % | median APE, final % | final closer on |
+|:--|--:|--:|--:|:--|
+| the Endterm's 8 worst test ads (text-explained discounts, no comparables) | 8 | 55.0 | 44.2 | 7/8 |
+| the Midterm's 8 worst test ads (mostly luxury) | 8 | 37.0 | 37.0 | 4/8 |
+| the base's 50 worst test ads | 50 | 35.9 | 32.0 | 41/50 |
+| all test ads | 963 | 9.13 | 7.82 | 534/963 (55 %) |
+
+The Endterm's plan said the text would address its worst errors, ads that are cheap for a reason only the description gives. On exactly those eight ads the final model is closer on 7 of 8 and cuts the median error from 55 to 44 % (the "cash only" one-room flat: 20.8 → 18.5 M against 13.9 M asked; the 99 m² flat in rough state: 58.4 → 53.3 M against 34 M), without fixing any of them: a 30–50 % discount for a legal or construction status is more than a residual model learns from a few dozen such ads. The luxury ads of the Midterm's list do not improve. Confirmed in direction, modest in size; detail in `outputs/final_eval/endterm_hypothesis.csv` and `endterm_worst8_final.csv`.
+
 ## 9. The app
 
 `app/gradio_app.py` (UI) on `app/predict.py` (inference API, no Gradio import). For a typed-in listing it builds the final model's inputs from the form: OSM geo features from the coordinates, regex text flags and the USER-base sentence embedding from the description, the CLIP ViT-B/32 embedding of up to three uploaded photos. Raw ad-page fields and the photo track's tabular features cannot come from a form and stay missing, as for training ads without them; the app says so in its notes and also shows the Endterm base estimate. Around the estimate: the trust track's conformal 80 % / 90 % intervals (absolute log-residual, Mondrian by estimate band, centred on the final estimate; calibrated on base OOF residuals, so conservative for the blend), an interval-based over/under-pricing verdict, TreeSHAP reasons (for the HGB half of the blend), five comparable training ads with a "few comparables" warning, text red flags with form-consistency checks, and the photo condition (CLIP probe) with a mismatch warning against the stated condition. Example card: `outputs/final/app_example.png`. Run: `python app/gradio_app.py` (http://127.0.0.1:7860).
 
-## 10. Why not deep reinforcement learning
+## 10. Existing solutions
+
+Pricing a flat from its characteristics is the classic *hedonic* problem (Rosen, 1974): the price as a sum of implicit prices of attributes, estimated by regression. Our Midterm linear model on log price is that model; krisha.kz's own hint on an ad page, the average price per m² in the district, is its one-attribute version and our "realtor rule" baseline (test MdAPE 14.3 %). Industrial estimators such as Zillow's Zestimate moved from hedonic models to ensembles of tree models and neural networks on millions of transactions, and the Kaggle *House Prices* competition settled the tabular question in favour of gradient boosting and stacking, where our Endterm landed with far less data (9.1 %). For photos, Poursaeed, Matera and Belongie (2018) showed that a CNN estimate of the luxury level of listing photos improves a price model, and Law, Paige and Russell (2019) added street-view and satellite images; our condition classifier and CLIP features are the small-data version of the idea, with the same finding: the photos carry price information, most of it already in the fields. For text, TF-IDF or transformer features of the description are commonly added as a residual correction, which is how we use them. Calibrated uncertainty is a more recent concern: conformal prediction (Vovk, Gammerman and Shafer, 2005; Romano, Patterson and Candès, 2019) gives intervals with guaranteed coverage without a distributional assumption and is the method behind our trust layer. Against this background the project is small (4,815 ads, two cities, asking prices) but complete: the same saved split from the Midterm on, one selection rule fixed before the experiments, a single scripted test evaluation, and an honest answer that the photos and the text help only in combination.
+
+## 11. Feedback from the earlier stages
+
+The Midterm came back with 82/100 and no written comments; we reviewed it against its rubric ourselves, and the Endterm's change log (Endterm notebook, Section 2) lists six fixes with before/after evidence: the sharpened question, the contact-data scrub, the dropped scraper artefact `has_detail`, ten wrong coordinates, model choice by CV only, ensembles for the expensive bands. Three observations of the Endterm's error analysis shaped the Final: the worst errors were explained by words no field carries (the text track and red flags, tested in 8.1 on the very ads the Endterm named), the test set had been looked at at every stage (the November hold-out and a scripted test run that refuses to be repeated), and ads with few comparable flats had the widest errors (the comparables warning and the conformal intervals in place of the fixed 20 % rule). The Endterm defence takes place in Week 10; its feedback and, if we receive one, the list of fixes from the pre-final defence will be added here and attached to the submission.
+
+## 12. Why not deep reinforcement learning
 
 Reinforcement learning learns a policy from rewards for actions taken in an environment. The data contain no actions and no outcomes: asking prices only, no sale price, no time to sale, one snapshot per ad (days on market are not shown). A pricing agent would need exactly that reward (sold or not, time to sale, final price) and many interactions with buyers; any reward written from our data would be the asking price itself, and RL would reduce to the regression we already have, with more variance. The right tool for "is this price fair, and how sure are we" is supervised regression with calibrated uncertainty. RL becomes relevant with longitudinal data (price cuts and removal dates of the same ad).
 
-## 11. Limitations
+## 13. Limitations
 
 - **Asking price ≠ sale price.** The model learns the asking market; "over-priced" means "asked above comparable asking prices".
 - **Reused test set.** The 963 saved test ads were scored at the Endterm and again here (once); no Final choice looked at them, but they are no longer a perfectly fresh sample.
@@ -366,8 +387,8 @@ Reinforcement learning learns a policy from rewards for actions taken in an envi
 - **The app sees less than the CV** (no raw fields, no photo-track tabular features from a form); intervals are calibrated on the base model.
 - **One October snapshot**, seller-reported condition labels, OSM completeness varying by district, five folds as a coarse ruler.
 
-## 12. Contributions and AI tools
+## 14. Contributions and AI tools
 
-**Rakhat Balgabekov**: the shared `krisha_ml` foundation and the reproduction of the Endterm, the leakage audit and the repaired folds, the photo track, the November scrape, the deliverable builders. **Aitbek Kaiyrbekuly**: the location track, the text track, the trust layer, the error analysis and the slides. Both: the selection rule, the readings and the conclusions, discussed and written together.
+**Rakhat Balgabekov**: the shared `krisha_ml` foundation and the reproduction of the Endterm, the leakage audit and the repaired folds, the photo track, the November scrape, the assembly of the notebook, the report and the slides from the outputs. **Aitbek Kaiyrbekuly**: the location track, the text track, the trust layer, the error analysis and the slides. Both: the selection rule, the readings and the conclusions, discussed and written together.
 
-**AI tools.** We used an AI coding assistant (Claude, via Claude Code) more heavily than in the Endterm, and state it plainly: several assistant sessions ran in parallel, one per track, on a shared code contract (`CONTRACT.md`) with one CV harness and one fixed selection rule. The assistant wrote most of the code in `krisha_ml/`, `scripts/` and `app/`, ran the experiments on our machine, drafted the readings, this report and the slides from the outputs, and reviewed the tracks against each other (e.g. the leakage review that corrected the rule threshold). We chose the question and the data, set the rule and the one-time use of the test ads, decided what to keep, checked the numbers against the outputs, and are responsible for every claim.
+**AI tools.** We used an AI coding assistant (Claude) to help write and debug the code of `krisha_ml`, the scripts and the app, to review the Endterm against the rubric when planning the Final, to draft the slides and the report tables from our outputs, and to check the English of our texts. Every experiment was run and checked by us; the choice of methods, the selection rule, the one-time use of the test ads, the readings of the results and the conclusions are our own.

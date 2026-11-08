@@ -1,4 +1,4 @@
-"""Shared helpers for the Final deliverable builders (notebook, report, slides).
+"""Shared helpers for assembling the Final notebook, report and slides from the outputs.
 
     from final_build_common import Values, fill, OUT, ...
 

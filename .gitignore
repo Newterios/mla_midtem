@@ -22,3 +22,10 @@ outputs/leakage/local/
 # Photo track figures that show krisha.kz photos (local only, never committed: data card promise)
 outputs/photos/gradcam_*.png
 outputs/photos/examples_*.png
+
+# Final: build helpers and working notes stay local (the submission holds the built notebook, report and slides)
+CONTRACT.md
+scripts/build_final_*.py
+scripts/final_slides_content.json
+tests/test_final_builders.py
+*_preliminary.csv

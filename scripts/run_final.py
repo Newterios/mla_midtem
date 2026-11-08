@@ -10,7 +10,7 @@ Stages (default: all except test, in this order; the ONE test evaluation runs on
   test      the ONE evaluation on the 963 test ads: bootstrap CIs (2,000 paired resamples), error by segment
   nov       November hold-out: reduced-feature model (fields the Nov cards carry) on Oct test and Nov ads
   figures   model comparison, ablation waterfall, residuals, segments, drift
-  export    copy the results into the layout the deliverable builders read (outputs/fusion/, outputs/final_eval/)
+  export    copy the results into the layout the notebook, the report and the slides read (outputs/fusion/, outputs/final_eval/)
 
 Outputs: outputs/final/*.csv|json|png (quick mode: outputs/final_quick/), logs on stdout.
 Usage:
@@ -606,7 +606,7 @@ def stage_figures(run: Run):
 
 # --------------------------------------------------------------------------- stage: export
 def _metric_block(b: dict) -> dict:
-    """bootstrap_metrics output -> the flat metric dict the deliverable builders read."""
+    """bootstrap_metrics output -> the flat metric dict the notebook, the report and the slides read."""
     out = {m: b[m]["value"] for m in ("mae_M", "rmse_M", "mdape", "r2", "within10", "within20") if m in b}
     for m, key in (("mae_M", "bootstrap95_mae"), ("mdape", "bootstrap95_mdape")):
         if m in b:
@@ -615,7 +615,7 @@ def _metric_block(b: dict) -> dict:
 
 
 def stage_export(run: Run):
-    """Copy the integration results into the layout the deliverable builders read
+    """Copy the integration results into the layout the notebook, the report and the slides read
     (scripts/final_build_common.py): outputs/fusion/ (CV choice) and outputs/final_eval/ (test + November).
     Pure re-formatting of files already written; whatever does not exist yet is skipped."""
     import shutil

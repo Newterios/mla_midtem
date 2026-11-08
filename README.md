@@ -6,39 +6,46 @@ Data: 4,815 krisha.kz ads collected with our own scraper on 4 and 8 October 2026
 ## Final (Week 10)
 
 ### Result in one line
-Final model = a small multimodal network (location, raw ad fields, photo and text features/embeddings) 50/50 log-blended with the Endterm HGB, chosen by CV on duplicate-aware folds (6.100 ± 0.388 vs base 6.723 M KZT; rule: below base − 0.354 = 6.370 M): on the 963 saved test ads, scored once, MAE **5.80 M KZT** (bootstrap 5.09–6.67; Endterm 6.29, paired difference −0.80 to −0.16 M), MdAPE **7.82 %** (Endterm 9.13 %), R² 0.853. No single block passes the rule step by step; the model passes as a whole.
+Final model = a small multimodal network (location, raw ad fields, photo and text features / embeddings) 50/50 log-blended with the Endterm HGB, chosen by CV on duplicate-aware folds (6.100 ± 0.388 vs base 6.723 M KZT; rule: below base − 0.354 M = 6.370 M). On the 963 saved test ads, scored once: MAE **5.80 M KZT** (bootstrap 5.09–6.67; Endterm 6.29, paired difference −0.80 to −0.16 M), MdAPE **7.82 %** (Endterm 9.13 %), R² 0.853. No single block passes the rule on its own; the model passes as a whole.
 
 ### Files
 | Path | What |
 |---|---|
-| `Final_SE-2424_Balgabekov_Kaiyrbekuly.ipynb` | **the Final notebook**, executed top to bottom; reads cached `outputs/`, retrains nothing heavy |
-| `FINAL_REPORT.md` | the Final tables in one file (`scripts/build_final_report.py`) |
-| `slides/Final_SE-2424_slides.pptx` | the Final presentation, 15 slides (`scripts/build_final_slides.py`) |
-| `CONTRACT.md` | the shared code contract of the tracks: data, folds, rule, API of `krisha_ml` |
-| `krisha_ml/` | shared package: `core` (Endterm reproduction, CV harness), `dedup` + `cv_schemes` (leakage), `geo`, `photos`, `text`, `trust`, `fusion` (integration) |
-| `scripts/run_final.py` | integration: compare / select / ablate / decide / fit / test (once) / nov / figures / export |
-| `scripts/leakage_audit.py`, `run_geo.py`, `photo_0*.py`, `run_text.py`, `run_trust.py` | the five tracks |
-| `outputs/<track>/` | every CV table, figure and decision; `outputs/final/` = model choice, test, November hold-out |
-| `models/final_model.joblib`, `final_model_meta.json` | the final model fitted on the 3,852 training ads + its metadata |
-| `app/gradio_app.py`, `app/predict.py` | the demo app (UI) and its inference API |
-| `data/clean/krisha_nov_holdout.csv`, `data_collection/scrape_krisha_nov.py` | 1,507 November ads (listing cards only) and their scraper |
-| `tests/` | pytest suite (`python -m pytest -q`) |
+| `Final_SE-2424_Balgabekov_Kaiyrbekuly.ipynb` | **the Final notebook**, executed top to bottom: question, data and leakage audit, location / photo / text blocks, fusion and selection, trust layer, the one test and the November hold-out, error analysis and the Endterm hypothesis, existing solutions and feedback, limitations, conclusions, contributions and AI tools. It reads the tables and figures in `outputs/` written by the scripts below and retrains nothing heavy |
+| `FINAL_REPORT.md` | the written report: question, data, methods, results, existing solutions, feedback, limitations, who did what and AI tools |
+| `slides/Final_SE-2424_slides.pptx`, `.pdf` | the Final presentation, 15 slides |
+| `app/gradio_app.py`, `app/predict.py` | the local app (Gradio UI) and its inference API: loads the saved model and preprocessing, validates the form, predicts for a new listing |
+| `models/final_model.joblib`, `models/final_model_meta.json` | the final model fitted on the 3,852 training ads, with its metadata (blocks, columns, seed) |
+| `krisha_ml/` | shared package: `core` (Endterm reproduction, CV harness), `dedup` and `cv_schemes` (leakage audit), `geo`, `photos`, `text`, `trust`, `fusion` |
+| `scripts/leakage_audit.py`, `run_geo.py`, `photo_0*.py`, `run_text.py`, `run_trust.py` | the five tracks, each writing to `outputs/<track>/` |
+| `scripts/run_final.py` | integration: compare, select, ablate, decide, fit, test (once), November hold-out, figures, export |
+| `outputs/<track>/` | every CV table, figure and decision; `outputs/final/` = model choice and test, `outputs/final_eval/` = test metrics, worst cases, the Endterm hypothesis |
+| `data/clean/krisha_nov_holdout.csv`, `data/raw_2026-11/`, `data_collection/scrape_krisha_nov.py` | the 1,507 November listing cards (hold-out), their raw snapshot and scraper |
+| `tests/` | pytest suite, 190+ tests: split and folds, Endterm reproduction, every track, the app's validation and prediction path |
+
+### Setup
+```bash
+python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+```
+Python 3.10+; CPU is enough. The first start of the app and of the text / photo scripts downloads the pretrained weights from Hugging Face (CLIP ViT-B/32 and the USER-base sentence encoder, about 1 GB in total) into the local cache; after that everything runs offline. Seed 42 everywhere; the split is read from `data/clean/split_ids.csv`.
 
 ### How to run
 ```bash
-PY=~/Downloads/mla/mla_midtem/.venv/bin/python           # or a fresh venv with requirements.txt
-OMP_NUM_THREADS=3 $PY scripts/run_final.py compare decide fit nov figures --jobs 3   # CV + choice (~5 min)
-OMP_NUM_THREADS=3 $PY scripts/run_final.py test figures export                      # the ONE test evaluation (refuses to rerun)
-$PY scripts/build_final_notebook.py && $PY -m jupyter nbconvert --to notebook --execute --inplace Final_SE-2424_Balgabekov_Kaiyrbekuly.ipynb
-$PY scripts/build_final_report.py && $PY scripts/build_final_slides.py
-$PY -m pytest -q
+.venv/bin/python -m pytest -q                                                   # the test suite, ~6 min
+.venv/bin/jupyter nbconvert --to notebook --execute --inplace Final_SE-2424_Balgabekov_Kaiyrbekuly.ipynb   # the notebook from the committed outputs, ~3 min
+OMP_NUM_THREADS=3 .venv/bin/python scripts/run_final.py compare decide fit nov figures --jobs 3   # recompute the CV comparison and the choice, ~5 min
+OMP_NUM_THREADS=3 .venv/bin/python scripts/run_final.py test figures export      # the ONE test evaluation (refuses to run twice)
 ```
+The track scripts (`leakage_audit.py`, `run_geo.py`, `photo_0*.py`, `run_text.py`, `run_trust.py`) recompute the per-track tables from the raw data; the photo steps need the downloaded photos in `data/photos/` (not committed, see the data card) and take hours on a CPU, the rest minutes. Run-to-run variation: the CV tables are deterministic with seed 42; the fine-tuned EfficientNet and the sentence-encoder embeddings can differ in the third decimal between machines because of non-deterministic GPU / BLAS kernels.
 
 ### App
 ```bash
-$PY app/gradio_app.py            # http://127.0.0.1:7860 ; --no-photos for a faster start
+.venv/bin/python app/gradio_app.py            # http://127.0.0.1:7860 ; --no-photos for a faster start
 ```
-For a typed-in listing the app builds the final model's inputs from the form (OSM geo from the coordinates, text flags and the USER-base embedding from the description, CLIP embedding of up to 3 photos; raw ad fields and photo-track table features stay missing and the app says so) and shows the estimate with the Endterm base next to it, a conformal 80/90 % interval and verdict, SHAP reasons, 5 comparable training ads, red flags and the photo condition with a mismatch check. Example: `outputs/final/app_example.png` (`scripts/make_app_example.py`).
+For a typed-in listing the app builds the final model's inputs from the form (OSM geo features from the coordinates, text flags and the USER-base embedding from the description, the CLIP embedding of up to 3 photos; raw ad-page fields and the photo track's tabular features stay missing and the app says so) and shows the estimate with the Endterm base next to it, a conformal 80 / 90 % interval and verdict, SHAP reasons, 5 comparable training ads, red flags, and the photo condition with a mismatch check. Invalid or missing input is reported field by field. Example: `outputs/final/app_example.png` (`scripts/make_app_example.py`).
+
+### Submission
+Both partners upload the same archive as `Final_Surname_Name_Group.zip` by the deadline in the Final Submission Box.
 
 ## Endterm
 

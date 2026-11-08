@@ -1,7 +1,7 @@
 """Gradio demo of the krisha.kz asking-price model (Final, SE-2424).
 
-    ~/Downloads/mla/mla_midtem/.venv/bin/python app/gradio_app.py            # http://127.0.0.1:7860
-    ~/Downloads/mla/mla_midtem/.venv/bin/python app/gradio_app.py --port 7870 --share
+    .venv/bin/python app/gradio_app.py            # http://127.0.0.1:7860
+    .venv/bin/python app/gradio_app.py --port 7870 --share
 
 All model logic lives in app/predict.py; this file only builds the form and renders the result.
 """

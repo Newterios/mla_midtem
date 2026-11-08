@@ -1,6 +1,6 @@
 {
   "built_utc": "2026-11-08T10:37:01+00:00",
-  "raw_dir": "/Users/rakhatbalgabekov/Downloads/mla/mla_final/data/raw_2026-11",
+  "raw_dir": "data/raw_2026-11",
   "october_check": {
     "rows": 4815,
     "same_ids_and_order": true,
@@ -73,7 +73,7 @@
   "posted_after_october": 665,
   "rows_after_cleaning": 1521,
   "rows_out": 1507,
-  "out_csv": "/Users/rakhatbalgabekov/Downloads/mla/mla_final/data/clean/krisha_nov_holdout.csv",
+  "out_csv": "data/clean/krisha_nov_holdout.csv",
   "by_city": {
     "Almaty": 754,
     "Astana": 753
