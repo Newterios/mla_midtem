@@ -16,6 +16,7 @@ Final model = a small multimodal network (location, raw ad fields, photo and tex
 | `slides/Final_SE-2424_slides.pptx`, `.pdf` | the Final presentation, 15 slides |
 | `app/gradio_app.py`, `app/predict.py` | the local app (Gradio UI) and its inference API: loads the saved model and preprocessing, validates the form, predicts for a new listing |
 | `models/final_model.joblib`, `models/final_model_meta.json` | the final model fitted on the 3,852 training ads, with its metadata (blocks, columns, seed) |
+| `models/photo_condition.joblib` | the app's photo-condition model (CLIP ViT-B/32 embeddings + logistic probe), exported by `scripts/export_photo_model.py` from the local embedding cache |
 | `krisha_ml/` | shared package: `core` (Endterm reproduction, CV harness), `dedup` and `cv_schemes` (leakage audit), `geo`, `photos`, `text`, `trust`, `fusion` |
 | `scripts/leakage_audit.py`, `run_geo.py`, `photo_0*.py`, `run_text.py`, `run_trust.py` | the five tracks, each writing to `outputs/<track>/` |
 | `scripts/run_final.py` | integration: compare, select, ablate, decide, fit, test (once), November hold-out, figures, export |
@@ -36,7 +37,7 @@ Python 3.10+; CPU is enough. The first start of the app and of the text / photo 
 OMP_NUM_THREADS=3 .venv/bin/python scripts/run_final.py compare decide fit nov figures --jobs 3   # recompute the CV comparison and the choice, ~5 min
 OMP_NUM_THREADS=3 .venv/bin/python scripts/run_final.py test figures export      # the ONE test evaluation (refuses to run twice)
 ```
-The track scripts (`leakage_audit.py`, `run_geo.py`, `photo_0*.py`, `run_text.py`, `run_trust.py`) recompute the per-track tables from the raw data; the photo steps need the downloaded photos in `data/photos/` (not committed, see the data card) and take hours on a CPU, the rest minutes. Run-to-run variation: the CV tables are deterministic with seed 42; the fine-tuned EfficientNet and the sentence-encoder embeddings can differ in the third decimal between machines because of non-deterministic GPU / BLAS kernels.
+`scripts/export_photo_model.py` writes `models/photo_condition.joblib` from the local CLIP embedding cache (`cache/clip_emb.npz`); without that file the app falls back to fitting the probe from the cache, or runs without the photo block and says so. The track scripts (`leakage_audit.py`, `run_geo.py`, `photo_0*.py`, `run_text.py`, `run_trust.py`) recompute the per-track tables from the raw data; the photo steps need the downloaded photos in `data/photos/` (not committed, see the data card) and take hours on a CPU, the rest minutes. Run-to-run variation: the CV tables are deterministic with seed 42; the fine-tuned EfficientNet and the sentence-encoder embeddings can differ in the third decimal between machines because of non-deterministic GPU / BLAS kernels.
 
 ### App
 ```bash
