@@ -171,6 +171,10 @@ def _num(raw: Mapping[str, Any], key: str, errors: list[str], *, label: str, lo:
     except (TypeError, ValueError):
         errors.append(f"{label} must be a number, got {v!r}")
         return None
+    if not required and x == 0:
+        # an optional number left empty in the UI arrives as 0 once its widget has been rendered
+        # (Gradio Number inside an opened accordion); 0 is never a real kitchen, ceiling, price or coordinate
+        return None
     if not math.isfinite(x) or not lo <= x <= hi:
         errors.append(f"{label} must be between {lo:g} and {hi:g}, got {x:g}")
         return None

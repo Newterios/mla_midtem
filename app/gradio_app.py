@@ -231,7 +231,7 @@ def shap_figure(r: Prediction, top: int = 8):
     ax.spines["bottom"].set_color(LINE)
     ax.tick_params(axis="y", length=0, labelsize=8.5, colors=INK)
     ax.tick_params(axis="x", labelsize=8, colors=MUTED)
-    ax.set_title("Top reasons (exact TreeSHAP vs the average ad)", fontsize=10, loc="left", color=INK, fontweight="bold")
+    fig.suptitle("Top reasons (exact TreeSHAP vs the average ad)", x=0.02, ha="left", fontsize=10, color=INK, fontweight="bold")
     fig.tight_layout()
     plt.close(fig)
     return fig

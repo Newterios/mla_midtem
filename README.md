@@ -13,7 +13,7 @@ Final model = a small multimodal network (location, raw ad fields, photo and tex
 |---|---|
 | `Final_SE-2424_Balgabekov_Kaiyrbekuly.ipynb` | **the Final notebook**, executed top to bottom: question, data and leakage audit, location / photo / text blocks, fusion and selection, trust layer, the one test and the November hold-out, error analysis and the Endterm hypothesis, existing solutions and feedback, limitations, conclusions, contributions and AI tools. It reads the tables and figures in `outputs/` written by the scripts below and retrains nothing heavy |
 | `FINAL_REPORT.md` | the written report: question, data, methods, results, existing solutions, feedback, limitations, who did what and AI tools |
-| `slides/Final_SE-2424_slides.pptx`, `.pdf` | the Final presentation, 15 slides |
+| `slides/Final_SE-2424_slides.pptx`, `.pdf` | the Final presentation, 16 slides plus 2 backup figures |
 | `app/gradio_app.py`, `app/predict.py` | the local app (Gradio UI) and its inference API: loads the saved model and preprocessing, validates the form, predicts for a new listing |
 | `models/final_model.joblib`, `models/final_model_meta.json` | the final model fitted on the 3,852 training ads, with its metadata (blocks, columns, seed) |
 | `models/photo_condition.joblib` | the app's photo-condition model (CLIP ViT-B/32 embeddings + logistic probe), exported by `scripts/export_photo_model.py` from the local embedding cache |
@@ -43,7 +43,7 @@ OMP_NUM_THREADS=3 .venv/bin/python scripts/run_final.py test figures export     
 ```bash
 .venv/bin/python app/gradio_app.py            # http://127.0.0.1:7860 ; --no-photos for a faster start
 ```
-For a typed-in listing the app builds the final model's inputs from the form (OSM geo features from the coordinates, text flags and the USER-base embedding from the description, the CLIP embedding of up to 3 photos; raw ad-page fields and the photo track's tabular features stay missing and the app says so) and shows the estimate with the Endterm base next to it, a conformal 80 / 90 % interval and verdict, SHAP reasons, 5 comparable training ads, red flags, and the photo condition with a mismatch check. Invalid or missing input is reported field by field. Example: `outputs/final/app_example.png` (`scripts/make_app_example.py`).
+For a typed-in listing the app builds the final model's inputs from the form (OSM geo features from the coordinates, text flags and the USER-base embedding from the description, the CLIP embedding of up to 3 photos; raw ad-page fields and the photo track's tabular features stay missing and the app says so) and shows the estimate with the Endterm base next to it, a conformal 80 / 90 % interval and verdict, SHAP reasons, 5 comparable training ads, red flags, and the photo condition with a mismatch check. Invalid or missing input is reported field by field. Screenshot of one prediction: `outputs/final/app_screenshot.png`; the same case as a rendered card: `outputs/final/app_example.png` (`scripts/make_app_example.py`).
 
 ### Submission
 Both partners upload the same archive as `Final_Surname_Name_Group.zip` by the deadline in the Final Submission Box.

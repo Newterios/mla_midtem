@@ -61,13 +61,21 @@ def test_validate_valid_input_coerces_types():
     ({"lat": 43.2, "lon": 76.9}, "outside Astana"),
     ({"lon": None}, "both latitude and longitude"),
     ({"condition": "luxury"}, "condition must be one of"),
-    ({"asking_price_m": 0}, "Asking price"),
+    ({"asking_price_m": -5}, "Asking price"),
     ({"description": "x" * (P.MAX_DESCRIPTION + 1)}, "too long"),
 ], ids=lambda v: v if isinstance(v, str) else None)
 def test_validate_rejects_bad_input(patch, fragment):
     with pytest.raises(P.ValidationError) as e:
         P.validate({**VALID, **patch})
     assert any(fragment in msg for msg in e.value.errors), e.value.errors
+
+
+def test_validate_optional_numbers_left_empty_arrive_as_zero():
+    """An empty optional number box in the UI is delivered as 0 once its widget has been rendered
+    (Gradio Number, e.g. inside the opened "More details" accordion): 0 means "not given", not an error."""
+    x = P.validate({**VALID, "asking_price_m": 0, "kitchen_area": 0, "ceiling_height": 0, "n_photos": 0, "lat": 0, "lon": 0})
+    assert x.asking_price_m is None and x.kitchen_area is None and x.ceiling_height is None
+    assert x.n_photos is None and x.lat is None and x.lon is None
 
 
 def test_validate_reports_all_errors_at_once():
