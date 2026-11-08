@@ -1,0 +1,25 @@
+{
+ "variant": "TF-IDF word+char + user-base embedding + regex flags, one Ridge residual",
+ "n_near_duplicate_val_ads": 109,
+ "share": 0.0283,
+ "near_dup": {
+  "n": 109,
+  "base_mae_M": 6.9243,
+  "text_mae_M": 6.2376,
+  "delta_M": -0.6867
+ },
+ "rest": {
+  "n": 3743,
+  "base_mae_M": 6.607,
+  "text_mae_M": 6.3386,
+  "delta_M": -0.2684
+ },
+ "paired_fold_delta_M": [
+  -0.2467,
+  -0.1823,
+  -0.3097,
+  -0.421,
+  -0.2416
+ ],
+ "paired_fold_delta_sd_M": 0.0811
+}

@@ -1,0 +1,21 @@
+variant,cv_mae_M,cv_mae_sd_M,cv_mdape,cv_r2,folds_mae_M,delta_vs_base_M,folds_better,passes_1sd_rule,kind,notes,seconds
+TF-IDF word 1-2 + Ridge residual,6.3979,0.3812,8.722,0.8666,5.990 / 6.748 / 6.867 / 5.935 / 6.450,-0.218,5,False,tfidf,"alpha per fold (GCV) 4.64159, 4.64159, 4.64159, 4.64159, 4.64159",49.8
+TF-IDF char 3-5 + Ridge residual,6.4016,0.385,8.708,0.8672,5.979 / 6.732 / 6.884 / 5.938 / 6.475,-0.2144,5,False,tfidf,"alpha per fold (GCV) 4.64159, 4.64159, 4.64159, 4.64159, 4.64159",83.5
+TF-IDF word+char + Ridge residual,6.3881,0.3872,8.698,0.8672,5.967 / 6.732 / 6.873 / 5.924 / 6.445,-0.2279,5,False,tfidf,"alpha per fold (GCV) 10, 10, 10, 10, 10",88.3
+"TF-IDF word+char + Ridge residual, price-weighted",6.4362,0.3724,8.795,0.8649,5.999 / 6.699 / 6.859 / 5.978 / 6.646,-0.1798,4,False,tfidf,"alpha per fold (GCV) 21.5443, 21.5443, 10, 10, 10",81.4
+TF-IDF word+char OOF residual as 1 HGB feature,6.5714,0.2852,8.819,0.8527,6.178 / 6.803 / 6.865 / 6.278 / 6.734,-0.0445,3,False,tfidf,inner 5-fold stacking feature,614.3
+rubert-tiny2 embedding PCA(32) as HGB features,7.3126,0.2928,9.805,0.8163,6.800 / 7.284 / 7.667 / 7.511 / 7.301,0.6966,0,False,embedding,PCA fitted per fold,35.3
+user-base embedding PCA(32) as HGB features,7.1498,0.3439,9.501,0.8314,6.813 / 7.276 / 7.746 / 6.831 / 7.084,0.5338,0,False,embedding,PCA fitted per fold,69.4
+e5-base embedding PCA(32) as HGB features,7.2777,0.2787,9.503,0.8229,6.837 / 7.425 / 7.683 / 7.195 / 7.248,0.6617,0,False,embedding,PCA fitted per fold,67.2
+user-base embedding + Ridge residual,6.4017,0.37,8.693,0.8671,6.078 / 6.739 / 6.861 / 5.898 / 6.433,-0.2143,5,False,embedding,"alpha per fold (GCV) 10000, 10000, 10000, 10000, 10000",23.8
+rubert-tiny2 embedding + Ridge residual,6.4688,0.352,8.705,0.8643,6.081 / 6.738 / 6.964 / 6.080 / 6.481,-0.1471,5,False,embedding,"alpha per fold (GCV) 4641.59, 2154.43, 2154.43, 2154.43, 2154.43",10.3
+"TF-IDF word+char + user-base embedding, one Ridge residual",6.3527,0.3799,8.61,0.869,5.991 / 6.691 / 6.829 / 5.855 / 6.398,-0.2632,5,False,combined,"alpha per fold (GCV) 21.5443, 21.5443, 21.5443, 21.5443, 21.5443",187.1
+"TF-IDF word+char + user-base embedding, one Ridge residual, price-weighted",6.3601,0.3749,8.757,0.8697,6.002 / 6.645 / 6.790 / 5.832 / 6.532,-0.2559,5,False,combined,"alpha per fold (GCV) 21.5443, 21.5443, 21.5443, 21.5443, 21.5443",179.2
+"TF-IDF word+char + user-base embedding + regex flags, one Ridge residual",6.3357,0.3919,8.64,0.8699,6.031 / 6.678 / 6.833 / 5.779 / 6.359,-0.2802,5,False,combined,"alpha per fold (GCV) 21.5443, 21.5443, 21.5443, 21.5443, 21.5443",219.0
+user-base embedding PCA(8) as HGB features,6.9212,0.3662,9.185,0.8433,6.468 / 7.142 / 7.462 / 6.573 / 6.962,0.3053,0,False,embedding,sanity check: fewer components,364.0
+"TF-IDF word+char + all 3 embeddings + regex flags, one Ridge residual",6.3525,0.3823,8.594,0.8692,6.052 / 6.668 / 6.853 / 5.814 / 6.375,-0.2635,5,False,combined,"alpha per fold (GCV) 46.4159, 46.4159, 46.4159, 21.5443, 21.5443",343.9
+regex flags (12) as HGB features,6.5876,0.3125,8.899,0.851,6.171 / 6.782 / 7.021 / 6.300 / 6.665,-0.0284,3,False,flags,,224.4
+regex flags (12) + Ridge residual,6.5309,0.3896,8.748,0.8603,6.226 / 6.831 / 7.098 / 6.030 / 6.470,-0.085,5,False,flags,"alpha per fold (GCV) 10, 21.5443, 21.5443, 21.5443, 10",0.7
+"flag similarity scores (12, user-base) as HGB features",7.0921,0.3504,9.442,0.824,6.567 / 7.092 / 7.324 / 6.892 / 7.586,0.4761,0,False,flags,,180.9
+rubert-tiny2 fine-tuned on fold residuals (3 ep),6.4964,0.3894,8.795,0.8639,6.107 / 6.771 / 7.058 / 6.032 / 6.514,-0.1195,5,False,finetune,"lr 5e-5 (head x20), 3 epochs, max_len 256, Smooth-L1, OneCycle",2403.5
+e5-base embedding + Ridge residual,6.4769,0.3643,8.806,0.8648,6.167 / 6.771 / 6.976 / 5.995 / 6.476,-0.1391,5,False,embedding,"alpha per fold (GCV) 10000, 10000, 10000, 10000, 10000",25.2
