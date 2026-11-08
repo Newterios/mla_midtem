@@ -1,0 +1,87 @@
+[
+  {
+    "variant": "base (Endterm)",
+    "cv_mae_M": 6.616,
+    "cv_mae_sd_M": 0.3535,
+    "cv_mdape": 8.934,
+    "cv_r2": 0.8569,
+    "folds_mae_M": [
+      6.277,
+      6.86,
+      7.142,
+      6.2,
+      6.601
+    ],
+    "delta_vs_base_M": 0.0,
+    "folds_better": 0,
+    "passes_1sd_rule": false
+  },
+  {
+    "variant": "base + geo (OSM)",
+    "cv_mae_M": 6.5311,
+    "cv_mae_sd_M": 0.2514,
+    "cv_mdape": 8.823,
+    "cv_r2": 0.8634,
+    "folds_mae_M": [
+      6.362,
+      6.76,
+      6.906,
+      6.312,
+      6.316
+    ],
+    "delta_vs_base_M": -0.0849,
+    "folds_better": 3,
+    "passes_1sd_rule": false
+  },
+  {
+    "variant": "base + raw fields",
+    "cv_mae_M": 6.7664,
+    "cv_mae_sd_M": 0.2912,
+    "cv_mdape": 8.907,
+    "cv_r2": 0.844,
+    "folds_mae_M": [
+      6.341,
+      6.763,
+      7.241,
+      6.652,
+      6.835
+    ],
+    "delta_vs_base_M": 0.1504,
+    "folds_better": 1,
+    "passes_1sd_rule": false
+  },
+  {
+    "variant": "base + geo + raw fields",
+    "cv_mae_M": 6.481,
+    "cv_mae_sd_M": 0.2801,
+    "cv_mdape": 8.534,
+    "cv_r2": 0.8616,
+    "folds_mae_M": [
+      6.228,
+      6.767,
+      6.875,
+      6.257,
+      6.278
+    ],
+    "delta_vs_base_M": -0.135,
+    "folds_better": 4,
+    "passes_1sd_rule": false
+  },
+  {
+    "variant": "base + distance to centre only",
+    "cv_mae_M": 6.5426,
+    "cv_mae_sd_M": 0.2426,
+    "cv_mdape": 8.672,
+    "cv_r2": 0.8611,
+    "folds_mae_M": [
+      6.232,
+      6.898,
+      6.744,
+      6.414,
+      6.424
+    ],
+    "delta_vs_base_M": -0.0733,
+    "folds_better": 3,
+    "passes_1sd_rule": false
+  }
+]

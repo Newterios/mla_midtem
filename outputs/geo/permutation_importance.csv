@@ -1,0 +1,40 @@
+feature,mae_increase_M,sd_over_folds_M,folds_positive
+[ref] area,14.8011,0.7327,5
+[ref] lat+lon,4.3996,0.412,5
+[group] all geo,4.3389,0.0892,5
+geo_dist_centre_km,1.5403,0.1634,5
+geo_n_park_1km,0.4236,0.0693,5
+geo_n_food_1km,0.3589,0.1161,5
+geo_dist_metro_km,0.1919,0.0667,5
+[ref] district,0.1909,0.0398,5
+[group] all raw fields,0.1634,0.1014,5
+geo_dist_kindergarten_km,0.1348,0.0821,5
+geo_dist_river_km,0.125,0.0292,5
+geo_dist_supermarket_km,0.1068,0.0333,5
+geo_dist_food_km,0.096,0.016,5
+geo_dist_health_km,0.0874,0.0391,5
+geo_dist_mall_km,0.0805,0.0415,5
+geo_dist_bus_stop_km,0.0768,0.054,4
+geo_dist_school_km,0.0696,0.0196,5
+geo_n_health_1km,0.0696,0.0143,5
+geo_dist_park_km,0.0544,0.0384,5
+raw_flooring,0.034,0.0198,5
+raw_furniture,0.0279,0.0481,4
+geo_n_kindergarten_1km,0.0265,0.0092,5
+geo_bus_stops_500m,0.0247,0.0133,5
+geo_n_school_1km,0.0241,0.024,4
+raw_sec_guard,0.0234,0.0105,5
+geo_n_supermarket_1km,0.0209,0.0167,4
+raw_sec_n_items,0.0096,0.0234,3
+raw_sec_concierge,0.0059,0.0094,3
+raw_door,0.0054,0.0143,4
+raw_phone,0.0046,0.0105,3
+raw_internet,0.0044,0.013,4
+raw_sec_code_lock,0.0039,0.0117,3
+raw_sec_alarm,0.0038,0.0048,4
+raw_balcony_glazed,0.0028,0.0036,4
+raw_sec_window_bars,0.0017,0.0035,3
+raw_sec_cctv,0.0012,0.0053,3
+raw_sec_intercom,0.0001,0.003,2
+raw_sec_video_intercom,-0.0011,0.0298,2
+raw_exchange,-0.0013,0.0108,3
