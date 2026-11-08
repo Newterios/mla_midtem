@@ -1,0 +1,238 @@
+{
+  "intervals": {
+    "chosen_variant": "abs-residual (base HGB) | Mondrian estimate band",
+    "method": "resid",
+    "calibration": "crossfit",
+    "mondrian": "estimate_band",
+    "levels": [
+      0.8,
+      0.9
+    ],
+    "quantile_params": null,
+    "qhat_log": {
+      "0.8": {
+        "__all__": 0.179846,
+        "60-100 M": 0.209732,
+        "40-60 M": 0.177318,
+        "<25 M": 0.171036,
+        "25-40 M": 0.15444,
+        ">=100 M": 0.300725
+      },
+      "0.9": {
+        "__all__": 0.244489,
+        "60-100 M": 0.312939,
+        "40-60 M": 0.233844,
+        "<25 M": 0.244574,
+        "25-40 M": 0.206699,
+        ">=100 M": 0.386571
+      }
+    },
+    "selection_rule": "OOF coverage >= level - 2 binomial SE in every city and every band of the point estimate, at 80 % and 90 %; then the narrowest mean 90 % width (train rows, Endterm folds)",
+    "chosen_by_city_only_rule": "abs-residual (base HGB) | global",
+    "duplicate_sensitivity": {
+      "n_ads_with_photo_duplicate": 70,
+      "0.8": {
+        "coverage_all": 0.818,
+        "coverage_without_duplicates": 0.8168,
+        "coverage_duplicates_only": 0.8857
+      },
+      "0.9": {
+        "coverage_all": 0.9073,
+        "coverage_without_duplicates": 0.9067,
+        "coverage_duplicates_only": 0.9429
+      }
+    },
+    "oof": {
+      "0.8": {
+        "coverage": 0.818,
+        "coverage_fold_sd": 0.0176,
+        "coverage_Almaty": 0.8221,
+        "coverage_Astana": 0.8143,
+        "min_band_coverage": 0.7396,
+        "min_estimate_band_coverage": 0.8023,
+        "mean_width_M": 21.2522,
+        "median_width_M": 15.007,
+        "median_rel_width_pct": 36.1009,
+        "share_above": 0.0935,
+        "share_below": 0.0885,
+        "valid_per_city": 1.0,
+        "valid_per_estimate_band": 1.0,
+        "valid_both_levels": 1.0
+      },
+      "0.9": {
+        "coverage": 0.9073,
+        "coverage_fold_sd": 0.003,
+        "coverage_Almaty": 0.9124,
+        "coverage_Astana": 0.9026,
+        "min_band_coverage": 0.8453,
+        "min_estimate_band_coverage": 0.9028,
+        "mean_width_M": 29.0733,
+        "median_width_M": 19.9763,
+        "median_rel_width_pct": 48.1367,
+        "share_above": 0.0488,
+        "share_below": 0.0439,
+        "valid_per_city": 1.0,
+        "valid_per_estimate_band": 1.0,
+        "valid_both_levels": 1.0
+      }
+    }
+  },
+  "flags": {
+    "rule": "over if asking price > upper bound of the chosen 90 % interval, under if < lower bound",
+    "share_over_interval90": 0.04880581516095535,
+    "share_under_interval90": 0.04387331256490135,
+    "share_over_endterm20": 0.09890965732087227,
+    "share_under_endterm20": 0.060228452751817235,
+    "share_over_both": 0.04880581516095535,
+    "jaccard_over": 0.49343832020997375,
+    "upper90_above_estimate_pct_median": 27.033103587960404,
+    "upper90_above_estimate_pct_p10_p90": [
+      22.661744351189327,
+      37.848625321650744
+    ],
+    "upper90_above_estimate_pct_median_by_estimate_band": {
+      "<25 M": 28.21,
+      "25-40 M": 23.41,
+      "40-60 M": 27.43,
+      "60-100 M": 37.82,
+      ">=100 M": 54.11
+    },
+    "over_share_by_estimate_band": {
+      "<25 M": {
+        "interval90": 0.0453,
+        "endterm20": 0.0841
+      },
+      "25-40 M": {
+        "interval90": 0.0495,
+        "endterm20": 0.0742
+      },
+      "40-60 M": {
+        "interval90": 0.0461,
+        "endterm20": 0.0966
+      },
+      "60-100 M": {
+        "interval90": 0.0544,
+        "endterm20": 0.1285
+      },
+      ">=100 M": {
+        "interval90": 0.0504,
+        "endterm20": 0.1977
+      }
+    },
+    "base_point_inside_90_share": 1.0,
+    "n_over_interval90": 188
+  },
+  "shap": {
+    "explainer": "shap.TreeExplainer on the fitted HGB inside the base pipeline (exact, interventional=False); one-hot dummies and missing indicators summed to the source feature",
+    "groups": {
+      "location": [
+        "lat",
+        "lon",
+        "district"
+      ],
+      "area": [
+        "area",
+        "log_area"
+      ]
+    },
+    "top_features": [
+      {
+        "feature": "area",
+        "mean_abs_shap_log": 0.287
+      },
+      {
+        "feature": "location",
+        "mean_abs_shap_log": 0.1569
+      },
+      {
+        "feature": "ceiling_height",
+        "mean_abs_shap_log": 0.0528
+      },
+      {
+        "feature": "year_built",
+        "mean_abs_shap_log": 0.0525
+      },
+      {
+        "feature": "rooms",
+        "mean_abs_shap_log": 0.0266
+      },
+      {
+        "feature": "condition",
+        "mean_abs_shap_log": 0.0262
+      },
+      {
+        "feature": "furnished",
+        "mean_abs_shap_log": 0.0241
+      },
+      {
+        "feature": "n_photos",
+        "mean_abs_shap_log": 0.0196
+      }
+    ],
+    "ordinal_twin_cv": {
+      "variant": "Endterm HGB, ordinal-encoded categoricals",
+      "cv_mae_M": 6.7451,
+      "cv_mae_sd_M": 0.2954,
+      "cv_mdape": 8.864,
+      "cv_r2": 0.8461,
+      "folds_mae_M": [
+        6.38,
+        7.001,
+        7.162,
+        6.499,
+        6.683
+      ],
+      "delta_vs_base_M": 0.1291,
+      "folds_better": 0,
+      "passes_1sd_rule": false
+    },
+    "importance_spearman_onehot_vs_ordinal": 0.997,
+    "example_ad": 1016288552,
+    "seconds": 202.1
+  },
+  "comparables": {
+    "k": 5,
+    "features": [
+      "log_area",
+      "rooms",
+      "year_built",
+      "floor",
+      "y_km",
+      "x_km"
+    ],
+    "same_city_only": true,
+    "warning": "5th-neighbour distance > 95% quantile of the leave-one-out 5th-neighbour distance of the city's training ads",
+    "thresholds": {
+      "Almaty": 1.2385,
+      "Astana": 1.3157
+    },
+    "oof_warning_share": 0.0514018691588785,
+    "warning_check": {
+      "few comparables": {
+        "n": 198.0,
+        "share": 0.0514,
+        "base_mae_M": 12.6139,
+        "base_mdape_pct": 11.3451,
+        "median_rel_width90_pct": 50.7785,
+        "over_or_under_flag_share": 0.1869
+      },
+      "enough comparables": {
+        "n": 3654.0,
+        "share": 0.9486,
+        "base_mae_M": 6.2909,
+        "base_mdape_pct": 8.766,
+        "median_rel_width90_pct": 48.3135,
+        "over_or_under_flag_share": 0.0876
+      }
+    },
+    "comparables_estimate_cv": {
+      "mae_M": 8.9167,
+      "rmse_M": 17.7651,
+      "mdape": 11.9224,
+      "r2": 0.7563,
+      "within10": 0.439,
+      "within20": 0.7214
+    },
+    "example_ad": 1016288552
+  }
+}
