@@ -1,0 +1,135 @@
+{
+ "title": "Which apartments are over-priced, and how sure are we? Location, photos, text and a trust layer on krisha.kz ads",
+ "subtitle": "Final: the Endterm model as the base, three new information sources fused and kept only if they beat it by the fixed 0.354 M rule, calibrated intervals for the user",
+ "footer": "SE-2424 · Balgabekov, Kaiyrbekuly · Final · Machine Learning Algorithms",
+ "title_meta": [
+  "Course project, Final (Week 10 defence) · Machine Learning Algorithms · Direction 1 (Apartments for sale) · Regression",
+  "Rakhat Balgabekov, Aitbek Kaiyrbekuly · Group SE-2424 · November 2026"
+ ],
+ "s2_title": "Question, base and what changed since the Endterm",
+ "s2_question": "Which apartments in Astana and Almaty are asked above or below what comparable apartments go for, by how much, and how sure can we be?",
+ "s2_left": [
+  "Same data and split:: 4,815 ads (Oct 2026), 3,852 training ads, the 963 saved test ads used once",
+  "Base = Endterm model, reproduced exactly:: tuned HGB on log price, CV {{base.cv_mae_M|.3f}} ± {{base.cv_mae_sd_M|.3f}} M, test MAE {{endterm.test_mae_M|.2f}} M, MdAPE {{endterm.test_mdape|.2f}} %",
+  "One rule for every model:: kept only if CV MAE < base − 0.354 M (Endterm fold SD, fixed) = {{final/selection:rule_threshold_M|.3f}} M on duplicate-aware folds ({{base.threshold_M|.3f}} M random)",
+  "New test:: 1,507 November ads, a month later, search-page level only"
+ ],
+ "s2_right": [
+  "Leakage audit:: duplicate ads found by photo hashes, embeddings, fields and text; grouped CV",
+  "Location:: OSM distances and counts (parks, schools, shops, centre)",
+  "Photos:: CLIP zero-shot, linear probes, fine-tuned EfficientNet-B0, Grad-CAM, mismatch flag",
+  "Text:: TF-IDF vs transformer embeddings as residual correctors; red flags",
+  "Trust layer:: conformal 80/90 % intervals, SHAP, 5 comparable ads, interval-based over-pricing flag"
+ ],
+ "s3_title": "Leakage audit: duplicates exist, but too few to bend the Endterm CV",
+ "s3_bullets": [
+  "4 signals:: pHash/dHash of photos, image-embedding cosine, structured fields (area 1 %, price 5 %, 150 m), text TF-IDF; stock photos (> 5 ads) ignored",
+  "Found:: {{leakage/leakage_summary:n_pairs}} pairs → {{leakage/leakage_summary:all_links.groups}} groups, {{leakage/leakage_summary:all_links.ads_in_groups}} ads; {{leakage/leakage_summary:same_flat.groups}} certainly the same flat",
+  "Test split:: {{leakage/leakage_summary:all_links.test_ads_with_train_twin}} test ads ({{leakage/leakage_summary:all_links.test_ads_with_train_twin_pct|.2f}} %) have a training twin",
+  "Repaired folds:: Endterm folds with each duplicate group in one fold: base {{leakage/leakage_summary:recommended_folds.base_cv_mae_M|.3f}} ± {{leakage/leakage_summary:recommended_folds.base_cv_sd_M|.3f}} M vs {{base.cv_mae_M|.3f}} M random; over 20 seeds duplicates add only +0.015 M",
+  "Decision:: repaired folds = primary scheme for the model choice; margin kept at 0.354 M (fold SD moves 0.26–0.50 with the seed; the earlier 6.459 threshold was wrong)"
+ ],
+ "s4_title": "Location: a smooth distance to the centre helps; more OSM objects add little",
+ "s4_bullets": [
+  "Features:: haversine distance to centre, nearest park / school / kindergarten / shop / clinic, counts within 500 m and 1 km (BallTree, OSM Overpass)",
+  "Best variant:: {{geo/cv@best:variant}}: {{geo/cv@best:cv_mae_M|.3f}} ± {{geo/cv@best:cv_mae_sd_M|.3f}} M ({{geo/cv@best:delta_vs_base_M|+.3f}}, {{geo/cv@best:folds_better}}/5 folds better)",
+  "Distance to centre alone:: {{geo/cv[distance to centre]:cv_mae_M|.3f}} M, most of the OSM gain",
+  "Raw ad-page fields alone:: {{geo/cv[base + raw fields]:cv_mae_M|.3f}} M: sparse columns add noise",
+  "1-SD rule:: {{geo/cv@n_pass}} of {{geo/cv@n}} variants pass"
+ ],
+ "s5_title": "Photos: CLIP reads the renovation; the price model gains little from it",
+ "s5_bullets": [
+  "Task the photos can see:: flat condition (fresh / good / needs repair / shell), grouped CV by duplicate photos",
+  "Frozen CNN + LR:: MobileNetV3 F1 {{photos/classifier_comparison[frozen mnv3]:macro_f1_cv|.3f}}, EfficientNet-B0 {{photos/classifier_comparison[frozen effnet_b0 + LR]:macro_f1_cv|.3f}}",
+  "CLIP linear probe:: macro-F1 {{photos/classifier_comparison[(c) CLIP linear probe]:macro_f1_cv|.3f}}; fine-tuned EfficientNet-B0 {{photos/classifier_comparison[fine-tuned]:macro_f1_fold0|.3f}} (fold 0)",
+  "Grad-CAM:: where the network looks; mismatch flag when photos contradict the stated condition",
+  "In the price model:: best {{photos/price_cv@best:cv_mae_M|.3f}} M ({{photos/price_cv@best:delta_vs_base_M|+.3f}}); {{photos/price_cv@n_pass}} of {{photos/price_cv@n}} pass"
+ ],
+ "s6_title": "Text: a residual correction that helps on every fold, but below the bar",
+ "s6_bullets": [
+  "Sanitised first:: money sentences, digits and contacts removed, so the text cannot leak the price",
+  "As a residual corrector:: Ridge on the base model's inner-OOF log error, alpha by GCV per fold",
+  "Best:: {{text/cv@best:variant}}: {{text/cv@best:cv_mae_M|.3f}} ± {{text/cv@best:cv_mae_sd_M|.3f}} M ({{text/cv@best:delta_vs_base_M|+.3f}}, {{text/cv@best:folds_better}}/5 folds)",
+  "TF-IDF vs transformer:: {{text/cv[TF-IDF word+char + Ridge residual]:cv_mae_M|.3f}} vs {{text/cv[user-base embedding]:cv_mae_M|.3f}} M, equal; embeddings as tree features {{text/cv[PCA(32)]:cv_mae_M|.3f}} M, worse",
+  "1-SD rule:: {{text/cv@n_pass}} of {{text/cv@n}} pass; red flags shown to the user, too rare to move the MAE"
+ ],
+ "s7_title": "Fusion and selection: per-step vs whole model",
+ "s7_bullets": [
+  "Per-step forward selection (strict):: no block passes; the largest first step (photo features, −0.24 M) < 0.354 M → would keep the base",
+  "Whole model:: network + base 50/50 log-blend {{final/selection:whole_model_comparison.cv_mae_M|.3f}} ± {{final/selection:whole_model_comparison.cv_mae_sd_M|.3f}} M, −{{final/selection:whole_model_comparison.gain_vs_base_M|.3f}} M > 0.354, 5/5 folds",
+  "Not just ensembling:: blend with a tabular-only network is worse than the base",
+  "Random folds agree:: {{final/selection:choice_other_folds.random.cv_mae_M|.3f}} M vs 6.616: not from duplicates",
+  "Final = the blend:: certified as a whole, no single block certified"
+ ],
+ "s8_title": "Conformal intervals replace the fixed 20 % over-pricing rule",
+ "s8_bullets": [
+  "Conformal:: out-of-fold scores, quantile ⌈(n+1)(1−α)⌉/n → guaranteed average coverage",
+  "Compared:: constant width on log residual vs conformalized quantile regression (CQR), per-city calibration",
+  "Chosen:: {{trust/chosen_settings:intervals.chosen_variant}}: 90 % coverage {{trust/chosen_settings:intervals.oof.0.9.coverage|.1%}}, median width {{trust/chosen_settings:intervals.oof.0.9.median_rel_width_pct|.0f}} % of the price",
+  "Flag:: over-priced if the price is above the upper 90 % bound; overlap with the 20 % rule {{trust/chosen_settings:flags.jaccard_over|.2f}} (Jaccard)",
+  "Why:: 20 % is too strict for standard flats, too lenient for unique ones"
+ ],
+ "s9_title": "Reasons and comparables: SHAP for the model, real ads for the user",
+ "s9_bullets": [
+  "TreeSHAP:: exact Shapley values, one-hot columns summed to the source feature",
+  "Top features:: {{trust/chosen_settings:shap.top_features.0.feature}}, {{trust/chosen_settings:shap.top_features.1.feature}}, {{trust/chosen_settings:shap.top_features.2.feature}}; stable vs ordinal encoding (ρ {{trust/chosen_settings:shap.importance_spearman_onehot_vs_ordinal|.2f}})",
+  "Comparables:: 5 nearest training ads in the same city (area, rooms, year, floor, position)",
+  "Warning:: 5th neighbour far → few comparables: {{trust/chosen_settings:comparables.oof_warning_share|.1%}} of ads, larger errors there",
+  "Limit:: SHAP explains the model, not the market"
+ ],
+ "s10_title": "One test evaluation, and the same model a month later",
+ "s10_bullets": [
+  "963 saved test ads, once:: MAE {{final.test_mae_M|.2f}} M (95 % {{final_eval/test_metrics:chosen.bootstrap95_mae.0|.2f}}–{{final_eval/test_metrics:chosen.bootstrap95_mae.1|.2f}}), MdAPE {{final.test_mdape|.2f}} %, ±20 %: {{final.within20|.0%}}",
+  "vs Endterm, paired:: MAE {{endterm.test_mae_M|.2f}} → {{final.test_mae_M|.2f}} M, difference {{final_eval/test_metrics:paired_diff_mae_M.0|+.2f}} to {{final_eval/test_metrics:paired_diff_mae_M.1|+.2f}} M; RMSE, R² unchanged (tails)",
+  "November ({{nov.n}} ads, card fields only):: reduced model MdAPE {{final_eval/nov_holdout:chosen_on_oct_test.mdape|.2f}} % (Oct test) → {{nov.mdape|.2f}} %: small drift",
+  "Read with care:: test set reused (2nd use); Nov ad pages blocked by bot protection → fused model not testable there"
+ ],
+ "s11_title": "Where the final model is still wrong",
+ "s11_bullets": [
+  "Absolute error grows with price:: MAE 2.1 M below 25 M, 28.9 M above 100 M",
+  "Shrinkage to the mean:: top band under-predicted (−9 %), cheapest over-predicted (+6 %)",
+  "Gain is in the bulk:: better in every city, band and room count except 4+ rooms (+0.84 M, CI crosses 0)",
+  "Worst 20 errors:: 17 are flats above 100 M, where the intervals are widest"
+ ],
+ "s12_title": "Conclusions",
+ "s12_left": [
+  "Endterm reproduced, CV honest:: duplicates few (+0.015 M), repaired folds are the primary yardstick",
+  "New sources carry signal:: best single blocks −0.15 to −0.24 M, none passes 0.354 M alone",
+  "Together they pass:: network + base blend, CV {{final/selection:whole_model_comparison.cv_mae_M|.3f}} M (base {{final/selection:base_cv_mae_M|.3f}})"
+ ],
+ "s12_right": [
+  "Test, once:: MAE {{final.test_mae_M|.2f}} M, MdAPE {{final.test_mdape|.2f}} % (Endterm {{endterm.test_mae_M|.2f}} M, {{endterm.test_mdape|.2f}} %)",
+  "Main gain for the user:: calibrated interval + reasons + 5 real comparables + adaptive flag, in an app",
+  "Next:: follow ads over time (price cuts, removal) → time-to-sale data, then decision models"
+ ],
+ "s13_title": "The app: one listing end to end",
+ "s13_bullets": [
+  "Form → final model:: geo from coordinates, text flags + USER-base embedding from the description, CLIP embedding of up to 3 photos",
+  "Missing by design:: raw ad-page fields and photo-track table features (as for training ads without them); the app says so",
+  "Around the estimate:: conformal 80/90 % interval, verdict, SHAP reasons, 5 comparables, red flags, photo condition + mismatch",
+  "Run:: python app/gradio_app.py"
+ ],
+ "s14_title": "Why no deep RL, and limitations",
+ "s14_left": [
+  "No deep RL:: RL needs actions and rewards (sold? when? at what price?); we have asking prices only, no outcome, no days-on-market, one snapshot → it would collapse into our regression with more variance",
+  "Right tool:: supervised regression + calibrated uncertainty; RL only with longitudinal data"
+ ],
+ "s14_right": [
+  "Asking ≠ sale price:: 'over-priced' = above comparable asking prices",
+  "Reused test set:: 963 ads scored at the Endterm and once more here",
+  "November = listing level only:: ad pages blocked by bot protection; 17 of 24 fields",
+  "Whole-model certification only:: no single block passes step by step; removing location costs the blend most (+0.29 M)",
+  "Also:: one snapshot, seller-stated labels, OSM gaps, 5 folds a coarse ruler"
+ ],
+ "s15_title": "Contributions and AI tools",
+ "s15_left": [
+  "Rakhat Balgabekov:: krisha_ml foundation, Endterm reproduction, leakage audit and repaired folds, photo track, November scrape, deliverable builders",
+  "Aitbek Kaiyrbekuly:: location track, text track, trust layer, error analysis, slides",
+  "Both:: selection rule, readings, conclusions"
+ ],
+ "s15_right": [
+  "AI tools, plainly:: Claude (Claude Code), several sessions in parallel, one per track, on one shared contract (CONTRACT.md) and one fixed rule",
+  "The assistant:: wrote most of the code, ran the experiments, drafted readings, report and slides, cross-reviewed tracks (e.g. corrected the 6.459 threshold)",
+  "We:: chose question and data, set the rule and the one-time test, decided what to keep, checked every number, own every claim"
+ ]
+}
