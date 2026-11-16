@@ -13,7 +13,7 @@ Final model = a small multimodal network (location, raw ad fields, photo and tex
 |---|---|
 | `Final_SE-2424_Balgabekov_Kaiyrbekuly.ipynb` | **the Final notebook**, executed top to bottom: question, data and leakage audit, location / photo / text blocks, fusion and selection, trust layer, the one test and the November hold-out, error analysis and the Endterm hypothesis, existing solutions and feedback, limitations, conclusions, contributions and AI tools. It reads the tables and figures in `outputs/` written by the scripts below and retrains nothing heavy |
 | `FINAL_REPORT.md` | the written report: question, data, methods, results, existing solutions, feedback, limitations, who did what and AI tools |
-| `slides/Final_SE-2424_slides.pptx`, `.pdf` | the Final presentation, 16 slides |
+| `slides/Final_SE-2424_slides.pptx`, `.pdf` | the Final presentation, 14 slides |
 | `app/gradio_app.py`, `app/predict.py` | the local app (Gradio UI) and its inference API: loads the saved model and preprocessing, validates the form, predicts for a new listing |
 | `models/final_model.joblib`, `models/final_model_meta.json` | the final model fitted on the 3,852 training ads, with its metadata (blocks, columns, seed) |
 | `models/photo_condition.joblib` | the app's photo-condition model (CLIP ViT-B/32 embeddings + logistic probe), exported by `scripts/export_photo_model.py` from the local embedding cache |
