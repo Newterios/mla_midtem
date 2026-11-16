@@ -82,25 +82,25 @@ CHOICES: dict[str, dict[str, str]] = {
 
 # photo condition classes (mirror krisha_ml.photos.CLASSES / CONDITION_TO_CLASS)
 PHOTO_CLASSES = ("fresh", "good", "needs_repair", "shell")
-PHOTO_CLASS_LABEL = {"fresh": "fresh renovation (свежий ремонт)", "good": "lived-in, tidy (аккуратный)",
-                     "needs_repair": "needs repair (требует ремонта)", "shell": "shell / rough (черновая)"}
+PHOTO_CLASS_LABEL = {"fresh": "fresh renovation", "good": "lived-in, tidy",
+                     "needs_repair": "needs repair", "shell": "shell / rough"}
 CONDITION_TO_CLASS = {"fresh_renovation": "fresh", "good": "good", "needs_repair": "needs_repair",
                       "rough": "shell", "free_layout": "shell"}
 
 # text flags of krisha_ml.text.FLAGS -> (severity, English label)
 FLAG_INFO = {
-    "assignment_of_rights": ("red", "Assignment of rights (переуступка): unfinished building, legal risk"),
-    "cash_only": ("red", "Cash only / no mortgage (только наличные): often a document problem"),
-    "encumbrance": ("red", "Encumbrance, pledge or arrest mentioned (обременение / залог)"),
-    "former_dorm_text": ("red", "Former dormitory (бывшее общежитие)"),
-    "needs_repair": ("amber", "Text says it needs repair (требует ремонта)"),
-    "rough_finish": ("amber", "Rough / pre-finish, no renovation (черновая / предчистовая)"),
-    "urgent": ("amber", "Urgent sale (срочно)"),
-    "bargain": ("info", "Price negotiable (торг)"),
-    "no_encumbrance": ("good", "States no encumbrance (без обременений)"),
-    "designer_renovation": ("good", "Designer renovation (дизайнерский ремонт)"),
-    "panoramic_view": ("good", "Panoramic windows / view (панорамные окна)"),
-    "two_level": ("good", "Two-level apartment / penthouse (двухуровневая)"),
+    "assignment_of_rights": ("red", "Assignment of rights: unfinished building, legal risk"),
+    "cash_only": ("red", "Cash only / no mortgage: often a document problem"),
+    "encumbrance": ("red", "Encumbrance, pledge or arrest mentioned"),
+    "former_dorm_text": ("red", "Former dormitory"),
+    "needs_repair": ("amber", "Text says it needs repair"),
+    "rough_finish": ("amber", "Rough / pre-finish, no renovation"),
+    "urgent": ("amber", "Urgent sale"),
+    "bargain": ("info", "Price negotiable"),
+    "no_encumbrance": ("good", "States no encumbrance"),
+    "designer_renovation": ("good", "Designer renovation"),
+    "panoramic_view": ("good", "Panoramic windows / view"),
+    "two_level": ("good", "Two-level apartment / penthouse"),
 }
 
 MAX_PHOTOS = 3
