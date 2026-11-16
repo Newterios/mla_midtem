@@ -10,7 +10,6 @@ nbconvert
 nbformat
 numpy
 pandas
-python-pptx
 requests
 scikit-learn
 seaborn

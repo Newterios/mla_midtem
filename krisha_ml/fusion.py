@@ -79,9 +79,9 @@ NON_FEATURE_COLS = {"fold", "split", "group", "group_size", "dup_group", "dup_gr
                     "target", "log_price", "base_log_pred", "pred", "prediction", "residual"}
 SEP = "__"   # block column names are "<block>__<column>"
 # The team 1-SD rule uses a FIXED margin: the Endterm base fold SD (0.3535 M). On the duplicate-aware
-# folds the base fold SD is 0.264, but the fold SD itself moves 0.26-0.50 with the fold seed
+# folds the base fold SD is 0.264, but the fold SD itself moves between about 0.15 and 0.67 with the fold seed
 # (outputs/leakage/cv_schemes_runs.csv), so base.sd on one fold set would make the rule looser by chance
-# (the earlier threshold 6.459 = 6.723 - 0.264 was this mistake). Threshold = base.mean - RULE_MARGIN_M.
+# than intended. Threshold = base.mean - RULE_MARGIN_M.
 RULE_MARGIN_M = float(core.ENDTERM_REFERENCE["cv_mae_sd_M"])
 
 

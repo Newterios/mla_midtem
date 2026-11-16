@@ -1,24 +1,11 @@
 # Final report — apartment asking-price prediction (SE-2424, Balgabekov & Kaiyrbekuly)
 
-Full text, code and figures: `Final_SE-2424_Balgabekov_Kaiyrbekuly.ipynb`; slides: `slides/Final_SE-2424_slides.pptx`. This file collects the tables. All CV numbers: 5-fold CV on the 3,852 training ads, mean ± fold SD. Track tables (Sections 1–3) use the Endterm folds (KFold 5, shuffle, seed 42); the model choice (Section 4) uses the **repaired folds** of the leakage audit (the same folds with every duplicate group moved whole into one fold, `outputs/leakage/folds_group.csv`) as the primary scheme and reports the random folds too. **Selection rule:** kept only if the CV MAE is below the base by more than the fixed Endterm margin of 0.354 M KZT (its fold SD): below **6.370 M** on the repaired folds (base 6.723 ± 0.264), below 6.262 M on the random folds. (An earlier draft used 6.459 = 6.723 − 0.264, the fold SD of the repaired folds; the leakage review corrected it, because the fold SD moves 0.26–0.50 M with the fold seed.)
+Full text, code and figures: `Final_SE-2424_Balgabekov_Kaiyrbekuly.ipynb`; slides: `slides/Final_SE-2424_slides.pptx`. This file collects the tables. All CV numbers: 5-fold CV on the 3,852 training ads, mean ± fold SD. Track tables (Sections 1–3) use the Endterm folds (KFold 5, shuffle, seed 42); the model choice (Section 4) uses the **repaired folds** of the leakage audit (the same folds with every duplicate group moved whole into one fold, `outputs/leakage/folds_group.csv`) as the primary scheme and reports the random folds too. **Selection rule:** kept only if the CV MAE is below the base by more than the fixed Endterm margin of 0.354 M KZT (its fold SD): below **6.370 M** on the repaired folds (base 6.723 ± 0.264), below 6.262 M on the random folds. The margin is not replaced by the 0.264 M fold SD of the repaired folds, because the fold SD itself moves between about 0.15 and 0.67 M with the fold seed.
 
 **Base (Endterm, reproduced):** CV MAE **6.616 ± 0.353 M**, MdAPE 8.93 %; test MAE 6.29 M, MdAPE 9.13 %, R² 0.855.
 **Final model:** C network + base, 50/50 log-blend (geo+rawfields+photo+text_flags+text_emb+photo_emb): CV MAE **6.100 ± 0.388 M** on the repaired folds (6.092 ± 0.468 on the random folds); test MAE **5.80 M** (95 % bootstrap 5.09–6.67; paired difference to the Endterm -0.80 to -0.16 M), MdAPE **7.82 %**, R² 0.853. November hold-out (1,507 ads, listing level, reduced model on the card fields): MdAPE 10.16 % on the October test → 10.51 % in November.
 
 **Sources, rights and matching.** Every new input attaches to the same 4,815 ads by the ad id of the October scrape; the saved train/test split is unchanged. *Text:* the description field of the public ad pages read on 4–8 October (robots.txt allows the ad pages, no login; data card), masked for contacts at the Endterm and stripped of money sentences, digits and contacts before any model sees it (4,735 ads with a description, 4,593 with 100+ characters). *Photos:* up to five image links per ad from the same pages, downloaded once into a local cache for feature extraction only, not committed, redistributed or shown (Grad-CAM figures with krisha.kz photos stay local); 4,574 ads (95 %) have a usable photo, the rest are "no photo", as in training. *Location:* OpenStreetMap amenities around the 4,802 ads with coordinates, via the Overpass API, fetched once and cached (© OpenStreetMap contributors, ODbL). *November hold-out:* 1,507 search-page cards scraped on 8 November from the public listing pages (ad pages were blocked by the site's bot protection), a separate sample never joined to the training rows. An ad with a missing source keeps its structured fields and gets missing indicators; no ad is dropped.
-
-## Status of the track outputs
-
-| track                       | outputs present   | missing   |
-|:----------------------------|:------------------|:----------|
-| core (Endterm reproduction) | 2/2               | -         |
-| leakage audit               | 3/3               | -         |
-| location                    | 3/3               | -         |
-| photos                      | 3/3               | -         |
-| text                        | 3/3               | -         |
-| trust                       | 3/3               | -         |
-| fusion                      | 2/2               | -         |
-| final evaluation            | 2/2               | -         |
 
 ## 1. The base: Endterm model reproduced
 
@@ -60,9 +47,11 @@ Pairs by signal: phash+emb 28, struct 6, phash 6, text 2, phash+emb+struct+text 
 | block                       | best variant                                                             | CV MAE (M KZT)   |   Δ vs base (M) | folds better   | variants kept   |
 |:----------------------------|:-------------------------------------------------------------------------|:-----------------|----------------:|:---------------|:----------------|
 | location (OSM + raw fields) | base + geo + raw fields                                                  | 6.481 ± 0.280    |          -0.135 | 4/5            | 0/4             |
-| photos                      | residual: HGB on condition probs + zero-shot                             | 6.426 ± 0.440    |          -0.19  | 4/5            | 0/14            |
+| photos                      | residual: HGB on condition probs + zero-shot                             | 6.426 ± 0.440    |          -0.19  | 4/5            | 0/13            |
 | text                        | TF-IDF word+char + user-base embedding + regex flags, one Ridge residual | 6.336 ± 0.392    |          -0.28  | 5/5            | 0/20            |
-| fusion of kept blocks       | C: network, all blocks, 50/50 log-blend with base                        | 6.092 ± 0.468    |          -0.524 | 5/5            | 5/38            |
+| whole-model fusion          | C: network, all blocks, 50/50 log-blend with base                        | 6.092 ± 0.468    |          -0.524 | 5/5            | 2/19            |
+
+The four rows above are on the Endterm (random) folds, as the track tables are. On the repaired folds, the primary scheme for the model choice, the same whole model scores 6.100 ± 0.388 M (−0.623 M against the base's 6.723, 5/5 folds) and 3 of 19 fusion variants pass the rule; no single block passes on either scheme.
 
 ## 3.1 Location (OSM + raw ad-page fields)
 
@@ -212,7 +201,7 @@ Repaired folds. The blend with a tabular-only network is worse than the base, so
 
 ## 5. Trust layer: conformal intervals (out-of-fold, training ads)
 
-Chosen: **abs-residual (base HGB) | Mondrian estimate band** (valid per-city coverage at 80 % and 90 %, then the narrowest 90 % width).
+Chosen: **abs-residual (base HGB) | Mondrian estimate band** (valid coverage in both cities and in every band of the estimate at 80 % and 90 %, then the narrowest 90 % width).
 
 |                                                           |   coverage |   coverage_fold_sd |   coverage_Almaty |   coverage_Astana |   min_band_coverage |   min_estimate_band_coverage |   mean_width_M |   median_width_M |   median_rel_width_pct |   share_above |   share_below | valid_per_city   | valid_per_estimate_band   | valid_both_levels   | chosen   |
 |:----------------------------------------------------------|-----------:|-------------------:|------------------:|------------------:|--------------------:|-----------------------------:|---------------:|-----------------:|-----------------------:|--------------:|--------------:|:-----------------|:--------------------------|:--------------------|:---------|
@@ -372,7 +361,7 @@ Pricing a flat from its characteristics is the classic *hedonic* problem (Rosen,
 
 ## 11. Feedback from the earlier stages
 
-The Midterm came back with 82/100 and no written comments; we reviewed it against its rubric ourselves, and the Endterm's change log (Endterm notebook, Section 2) lists six fixes with before/after evidence: the sharpened question, the contact-data scrub, the dropped scraper artefact `has_detail`, ten wrong coordinates, model choice by CV only, ensembles for the expensive bands. Three observations of the Endterm's error analysis shaped the Final: the worst errors were explained by words no field carries (the text track and red flags, tested in 8.1 on the very ads the Endterm named), the test set had been looked at at every stage (the November hold-out and a scripted test run that refuses to be repeated), and ads with few comparable flats had the widest errors (the comparables warning and the conformal intervals in place of the fixed 20 % rule). The Endterm defence takes place in Week 10; its feedback and, if we receive one, the list of fixes from the pre-final defence will be added here and attached to the submission.
+The Midterm came back with 82/100 and no written comments; we reviewed it against its rubric ourselves, and the Endterm's change log (Endterm notebook, Section 2) lists six fixes with before/after evidence: the sharpened question, the contact-data scrub, the dropped scraper artefact `has_detail`, ten wrong coordinates, model choice by CV only, ensembles for the expensive bands. Three observations of the Endterm's error analysis shaped the Final: the worst errors were explained by words no field carries (the text track and red flags, tested in 8.1 on the very ads the Endterm named), the test set had been looked at at every stage (the November hold-out and a scripted test run that refuses to be repeated), and ads with few comparable flats had the widest errors (the comparables warning and the conformal intervals in place of the fixed 20 % rule). The Endterm came back with **90/100** and four comments, each of which changed something here. (1) *Read the network curves carefully.* The Endterm text said the validation error 'stops improving after 10–30 epochs', but its own table shows the best epoch at 16–25 for the three smaller networks and at 75 for 256-128-64; the sentence is corrected in the Endterm notebook of this archive, and in the Final every statement about a training curve is read from the saved history (Section 4: the fine-tuned CNN has its best validation loss at its last epoch, so it is under-trained, not over-fitted). (2) *A log loss of 0.13 is not a 13 % error.* It is a mean absolute error of 0.13 in log price, a typical factor of e^0.13 ≈ 1.14 (about −12 % / +14 %); the Final names the unit of every loss and reports errors in M KZT and as MdAPE. (3) *The comparison text must match the table.* 'Every row is better than the Midterm's' was wrong for one segment (Ast-0, 11.1 % against 11.0 %); it is corrected, and every 'every / none / all' sentence of the Final was re-checked against the table next to it, which changed several sentences in Sections 3–8. (4) *Every number on the slides must match the notebook.* The Final slides were rebuilt, in plainer language, and each number on them was checked against the files in `outputs/` that the notebook reads. The comment on timing is taken into the defence: the talk is rehearsed to leave room for the demo and the questions.
 
 ## 12. Why not deep reinforcement learning
 

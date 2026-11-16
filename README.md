@@ -13,7 +13,7 @@ Final model = a small multimodal network (location, raw ad fields, photo and tex
 |---|---|
 | `Final_SE-2424_Balgabekov_Kaiyrbekuly.ipynb` | **the Final notebook**, executed top to bottom: question, data and leakage audit, location / photo / text blocks, fusion and selection, trust layer, the one test and the November hold-out, error analysis and the Endterm hypothesis, existing solutions and feedback, limitations, conclusions, contributions and AI tools. It reads the tables and figures in `outputs/` written by the scripts below and retrains nothing heavy |
 | `FINAL_REPORT.md` | the written report: question, data, methods, results, existing solutions, feedback, limitations, who did what and AI tools |
-| `slides/Final_SE-2424_slides.pptx`, `.pdf` | the Final presentation, 16 slides plus 2 backup figures |
+| `slides/Final_SE-2424_slides.pptx`, `.pdf` | the Final presentation, 16 slides |
 | `app/gradio_app.py`, `app/predict.py` | the local app (Gradio UI) and its inference API: loads the saved model and preprocessing, validates the form, predicts for a new listing |
 | `models/final_model.joblib`, `models/final_model_meta.json` | the final model fitted on the 3,852 training ads, with its metadata (blocks, columns, seed) |
 | `models/photo_condition.joblib` | the app's photo-condition model (CLIP ViT-B/32 embeddings + logistic probe), exported by `scripts/export_photo_model.py` from the local embedding cache |
@@ -22,13 +22,13 @@ Final model = a small multimodal network (location, raw ad fields, photo and tex
 | `scripts/run_final.py` | integration: compare, select, ablate, decide, fit, test (once), November hold-out, figures, export |
 | `outputs/<track>/` | every CV table, figure and decision; `outputs/final/` = model choice and test, `outputs/final_eval/` = test metrics, worst cases, the Endterm hypothesis |
 | `data/clean/krisha_nov_holdout.csv`, `data/raw_2026-11/`, `data_collection/scrape_krisha_nov.py` | the 1,507 November listing cards (hold-out), their raw snapshot and scraper |
-| `tests/` | pytest suite, 190+ tests: split and folds, Endterm reproduction, every track, the app's validation and prediction path |
+| `tests/` | pytest suite, 118 tests: split and folds, Endterm reproduction, every track, the app's validation and prediction path |
 
 ### Setup
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 ```
-Python 3.10+; CPU is enough. The first start of the app and of the text / photo scripts downloads the pretrained weights from Hugging Face (CLIP ViT-B/32 and the USER-base sentence encoder, about 1 GB in total) into the local cache; after that everything runs offline. Seed 42 everywhere; the split is read from `data/clean/split_ids.csv`.
+Python 3.10+; CPU is enough. The first start of the app and of the text / photo scripts downloads the pretrained weights from Hugging Face (CLIP ViT-B/32 and the USER-base sentence encoder, about 1 GB in total) into the local cache; after that everything runs offline. Seed 42 everywhere; the split is read from `data/clean/split_ids.csv`. The first prediction of the app (and `scripts/run_geo.py`) also downloads the OpenStreetMap layers of the two cities once through the Overpass API into `cache/osm/` (about 19 small requests, a few minutes). Tested with Python 3.14, scikit-learn 1.9, torch 2.15 and gradio 6.31.
 
 ### How to run
 ```bash
